@@ -64,35 +64,23 @@ Lo que se pidió:
 5. El historial se conserva por nombre de ejercicio.
 6. Hay que generalizar `dias.js` para planes de 3 o 4 días.
 
-## Siguiente (respuestas de Aarón, 2026-09-23; todo en la beta, nada a main)
-Aarón compacta el contexto antes; al volver, hacer esto en `v2`, probar, publicar la beta y reportar:
-1. Mango de las mancuernas: de aluminio, «no cuenta» → `EQUIPO_INICIAL.maneral = 0` en logica/equipo.js.
-   Ojo: si en la beta ya se guardó `maneral: null`, que normalizarEquipo use el inicial (0) en lugar de null.
-   Actualizar el texto de «Tu equipo en palabras» (mango de aluminio; la polea se carga parejo).
-2. Polea: el carro «no cuenta» (0) y se carga IGUAL DE CADA LADO (si no, se desbalancea) →
-   `cargar` de polea como pares por lado: armar(e.polea, 2, 2, discosKg); `pasoDe('polea')` = 2 × disco más chico = 5 kg.
-   Consecuencias a reportar: con tus discos la polea sale en saltos de 5 kg; eversión de tobillo 2.5 kg ya no
-   se puede parejo (mínimo 5); face pull y extensión de tríceps 12 kg → «10 o 15». Ajustar pruebas
-   (equipo.test.js: casos de polea; servicios.test.js: el aviso de face pull dice «10 kg o 15 kg»).
-3. Guía de respiración en el descanso: HACERLA. Diseño propuesto: en la pantalla de descanso, «Inhala… / Exhala…»
-   sincronizado con el anillo que ya «respira» (animación de 10 s: 4 s crece = inhala, 6 s baja = exhala);
-   respetar prefers-reduced-motion; preferencia en «Tu equipo» (encendida por omisión, decisión mía a señalar).
-4. Nombres entre rutinas (pedido de Aarón, 2026-09-23: «necesitamos forma de garantizar que los nombres entre una
-   rutina actual y la rutina nueva sean iguales»). Eligió las tres capas, «heredar por nombre» y «todo junto»:
-   a) (idea suya) el prompt lleva la lista de nombres de TODAS las rutinas (hoy 34) con la orden de copiarlos exactos.
-      La lista se deriva de las rutinas guardadas (nunca se borran), sin guardarla aparte (decisión mía).
-   b) (mía) al revisar, cada nombre que no está en la lista se compara con ella: si se parece, pregunta «¿es el mismo?»
-      y no deja programar sin respuesta; si sí, se escribe el nombre de siempre. Nunca une solo. Los que no se parecen
-      se pueden unir a mano («es el mismo que…»).
-   c) (mía, hueco de la tanda 4) claves por día: aun con el nombre exacto se perdía el historial (elevación lateral
-      sola o igualada; eversión cambiada en un solo día: los 5 días). Regla elegida: heredar por nombre. Si el
-      ejercicio tenía UNA clave, todos sus renglones nuevos la heredan (aunque difieran entre días); si tenía varias
-      por día (elevación lateral), el mismo día hereda la de ese día y un día nuevo lleva la suya. Solo cambia el importador.
-5. Registrar decisiones en DECISIONES.tsv (109+), actualizar este plan y la memoria, publicar beta, verificar.
+## Después de la tanda 4: hecho (en la beta, esperando aprobación)
+Respuestas y pedidos de Aarón del 2026-09-23. Decisiones 109 a 120. Pruebas: 157 de 157.
+- Equipo: el mango de aluminio y el carro de la polea no cuentan (0); la polea se carga igual de cada lado
+  (sube de 5 en 5 kg). En tu hoja salen exactos 17 de 28 pesos con calculadora: barra 6 de 6, polea 5 de 12,
+  mancuernas «c/u» 3 de 7, landmine 1 de 1, una mancuerna 2 de 2.
+- Nombres entre rutinas («necesitamos forma de garantizar que los nombres entre una rutina actual y la rutina
+  nueva sean iguales»): lista de nombres en el prompt (idea suya), revisión que pregunta por los parecidos y no
+  programa sin respuesta, y claves heredadas por nombre (arregla un hueco de la tanda 4). Eligió «todo junto».
+- Guía de respiración en el descanso: «Inhala… / Exhala…» dentro del anillo; encendida; se apaga en Tu equipo.
+Sin verificar en el cel: la guía con el teléfono en la mano, «Respira despacio» (sin animaciones) y una respuesta
+real de una IA con nombres cambiados (se probó con respuestas escritas a mano).
+No cubre: sinónimos o traducciones («Bench press») no se detectan solos: se unen a mano en la revisión.
 
 ## Otras ideas aprobadas, sin tanda asignada
 Compartir respaldo, notificación de fin de descanso con pantalla apagada (no garantizada en Android), pruebas en Android emulado.
-Guía de respiración en el descanso: propuesta y no hecha; esperando respuesta de Aarón.
+Aarón escribió «ya haz el resto de las tandas» (2026-09-23): las 4 tandas ya estaban hechas; le pregunté si
+«el resto» incluye estas ideas. Mientras no conteste, no se tocan.
 
 ## Para pasar las tandas a la app real (main)
 Solo cuando Aarón las apruebe en la beta. Antes: exportar respaldo en la app real. Luego fusionar v2 en main,
