@@ -1,6 +1,6 @@
 #	Área	Decisión o suposición	Por qué	Renglones de la rutina	Origen	Cómo se verificó
 1	Repo	Repo público aaronfloresdotnet/AaronFit	Con tu plan, GitHub rechaza Pages en repo privado (HTTP 422)	—	Aarón («Que sea público entonces»)	Respuesta de la API de GitHub
-2	Repo	Antes de publicar, el historial se reescribió para quitar unas medidas corporales de ejemplo del encargo que había usado en una prueba; el repo privado con el historial viejo quedó renombrado como AaronFit-historial-privado	Podían ser tus medidas reales y tus datos nunca salen del cel	—	Mía	git log sin esas cifras
+2	Repo	Antes de publicar, el historial se reescribió para quitar unas medidas corporales de ejemplo del encargo que había usado en una prueba; el repo privado con el historial viejo quedó renombrado como AaronFit-historial-privado	Podían ser tus medidas reales y tus datos nunca salen del cel	—	Aarón eligió esta opción	git log: 0 apariciones; el commit viejo no existe en el repo público (HTTP 422)
 3	Estructura	La app vive en docs/; pruebas/ y herramientas/ quedan fuera	Pages sirve solo docs/, así las pruebas no se publican (l.506)	—	Mía	Lista del service worker
 4	Estructura	Capa de aplicación (servicios/) entre pantalla y datos, con dependencias inyectadas y un solo punto de conexión (contenedor.js)	La lógica es pura (l.57) y la pantalla no toca IndexedDB: alguien tiene que orquestar	—	Mía	Prueba de arquitectura
 5	Estructura	Prueba que falla si una capa importa lo que no le toca o si la lógica usa DOM, red o reloj	Que la regla de capas no dependa de la memoria de nadie	—	Mía	Falla al romperla a propósito (2 de 2 casos)
@@ -46,7 +46,7 @@
 45	Videos	28 de 31 páginas están bloqueadas por Cloudflare (MuscleWiki 27, Muscle & Strength 1): no se evadió el bloqueo; esas muestran «Ver el video en el navegador»	Evadir la detección de bots no es aceptable; los términos de MuscleWiki limitan el uso de sus videos	29 renglones con esas ligas	Mía	curl y Chromium: 403
 46	Videos	WorkoutLabs (equilibrio): su GIF sí carga desde github.io pero no se usa	La página prohíbe marcos y su imagen principal rechaza otros sitios; su licencia no la revisé	101…501	Mía	Encabezados y navegador
 47	Videos	YouTube en modo de privacidad mejorada (youtube-nocookie)	No deja cookies hasta que reproduces	102, 202, 302, 402, 502, 404	Mía	Navegador
-48	PWA	start_url y scope relativos («./»): resuelven a la carpeta del sitio en Pages	Evita el error clásico de subruta (l.534)	—	Mía	Sitio publicado
+48	PWA	start_url y scope relativos («./»): resuelven a la carpeta del sitio en Pages	Evita el error clásico de subruta (l.534)	—	Mía	Sitio publicado: start_url y scope = https://aaronfloresdotnet.github.io/AaronFit/
 49	PWA	La lista y la versión de la caché las calcula un script (huella del contenido); una prueba falla si no están al día	El error clásico: actualizar y seguir viendo lo viejo (l.526)	—	Mía	Prueba y navegador sin servidor
 50	PWA	En localhost no se registra el service worker (salvo con ?sw)	Al desarrollar no se sirven archivos viejos	—	Mía	—
 51	PWA	Una versión nueva se aplica al volver a inicio, nunca a media serie	No cortar un descanso ni una captura	—	Mía	—
