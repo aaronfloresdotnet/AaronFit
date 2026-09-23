@@ -24,6 +24,23 @@
   --fuente: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
+/* Beta: acento ámbar para que nunca se confunda con la app real. */
+body[data-variante='beta'] {
+  --acento: #fbbf24;
+  --acento-oscuro: #3b2a06;
+  --acento-texto: #261a00;
+}
+
+.insignia-beta {
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--acento);
+  color: var(--acento-texto);
+  font-size: 0.7rem;
+  vertical-align: middle;
+}
+
 *,
 *::before,
 *::after {

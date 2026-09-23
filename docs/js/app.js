@@ -2,6 +2,7 @@
 // Cada vista exporta montar(contenedor, parámetros, app) y puede devolver una
 // función de limpieza. La pantalla recibe los servicios; nunca toca la base.
 
+import { CONFIG } from './config.js';
 import { crearAvisos } from './componentes/aviso.js';
 import { crearCronometro } from './componentes/cronometro.js';
 import { h, pintar } from './componentes/dom.js';
@@ -28,7 +29,12 @@ const RUTAS = [
 const principal = document.getElementById('principal');
 const alarma = crearAlarma();
 
+// La beta se ve distinta (color ámbar e insignia) para no confundirla con la real.
+document.body.dataset.variante = CONFIG.variante;
+document.title = CONFIG.nombre;
+
 const app = {
+  config: CONFIG,
   servicios,
   alarma,
   archivos,

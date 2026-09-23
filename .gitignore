@@ -12,3 +12,6 @@ desktop.ini
 
 # Node (no hay dependencias; por si alguien corre npm install)
 node_modules/
+
+# Copia de trabajo del repo AaronFit-beta (la arma herramientas/publicar-beta.sh)
+.beta/

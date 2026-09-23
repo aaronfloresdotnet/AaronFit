@@ -5,6 +5,13 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# Solo main llega a la app real. Lo nuevo se prueba antes en la beta (publicar-beta.sh).
+rama=$(git branch --show-current)
+if [ "$rama" != "main" ]; then
+  echo "La app real solo se publica desde main (estás en $rama). Para probar usa herramientas/publicar-beta.sh." >&2
+  exit 1
+fi
+
 node herramientas/versionar-sw.js
 node --test
 

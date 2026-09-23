@@ -2,10 +2,12 @@
 // - Archivos propios de la app: primero caché, para que abra sin internet.
 // - Todo lo externo (videos): no se toca; va directo a la red.
 // - NUNCA toca IndexedDB: los datos del usuario no pasan por aquí.
-// Al cambiar VERSION se instala la caché nueva y se borra la vieja.
+// Al cambiar VERSION se instala la caché nueva y se borra la vieja; solo se
+// borran cachés con el mismo PREFIJO (la beta usa otro y no se tocan entre sí).
 
 // <archivos> — generado por herramientas/versionar-sw.js; no editar a mano.
-const VERSION = 'aaronfit-47f1c15cbe8b';
+const PREFIJO = 'aaronfit-';
+const VERSION = 'aaronfit-227f090dfaa6';
 const ARCHIVOS = [
   './',
   './css/estilos.css',
@@ -20,6 +22,7 @@ const ARCHIVOS = [
   './js/componentes/dom.js',
   './js/componentes/spinner.js',
   './js/componentes/video.js',
+  './js/config.js',
   './js/datos/db.js',
   './js/datos/repos.js',
   './js/datos/semilla.js',
@@ -65,7 +68,7 @@ self.addEventListener('activate', (evento) => {
   evento.waitUntil(
     caches
       .keys()
-      .then((nombres) => Promise.all(nombres.filter((n) => n.startsWith('aaronfit-') && n !== VERSION).map((n) => caches.delete(n))))
+      .then((nombres) => Promise.all(nombres.filter((n) => n.startsWith(PREFIJO) && n !== VERSION).map((n) => caches.delete(n))))
       .then(() => self.clients.claim()),
   );
 });

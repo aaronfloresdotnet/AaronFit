@@ -53,10 +53,19 @@ test('hay módulos en todas las capas esperadas', () => {
   for (const c of ['logica', 'datos', 'servicios']) assert.ok(capas.has(c), c);
 });
 
+// config.js es una hoja: todas las capas pueden leerla y ella no importa nada.
+const CONFIG = resolve(JS, 'config.js');
+
+test('config.js es una hoja: no importa nada', () => {
+  const config = modulos.find((m) => m.archivo === CONFIG);
+  assert.ok(config, 'existe docs/js/config.js');
+  assert.deepEqual(config.importa, []);
+});
+
 test('ninguna capa importa de una capa que no le toca', () => {
   for (const m of modulos) {
     for (const { ruta, destino } of m.importa) {
-      if (!ruta.startsWith('.')) continue;
+      if (!ruta.startsWith('.') || destino === CONFIG) continue;
       const destinoCapa = capa(destino);
       assert.ok(!(PROHIBIDO[m.capa] ?? []).includes(destinoCapa), `${m.nombre} importa ${ruta} (${m.capa} → ${destinoCapa})`);
     }

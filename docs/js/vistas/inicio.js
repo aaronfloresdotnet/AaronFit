@@ -22,7 +22,7 @@ export async function montar(raiz, _parametros, app) {
     h(
       'header',
       { class: 'encabezado' },
-      h('div', { class: 'marca' }, 'AaronFit'),
+      h('div', { class: 'marca' }, app.config.nombre, app.config.variante === 'beta' ? h('span', { class: 'insignia-beta' }, 'prueba') : null),
       h('div', { class: 'encabezado-fecha' }, mayuscula(fechaLarga(d.fecha))),
       h('div', { class: 'encabezado-semana' }, `Semana ${Number(d.semana.slice(6))} del año · semana ${d.semanaPrograma} del programa`),
     ),

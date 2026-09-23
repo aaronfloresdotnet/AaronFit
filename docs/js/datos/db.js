@@ -1,7 +1,9 @@
 // Capa de datos: apertura de IndexedDB, esquema, migraciones y transacciones.
 // Nadie fuera de js/datos/ toca IndexedDB.
 
-export const NOMBRE_BD = 'entrena';
+import { CONFIG } from '../config.js';
+
+export const NOMBRE_BD = CONFIG.nombreBD; // 'entrena' en producción; la beta usa otra
 export const VERSION_BD = 1;
 export const ALMACENES = ['rutina', 'sesiones', 'series', 'medidas', 'estado'];
 
