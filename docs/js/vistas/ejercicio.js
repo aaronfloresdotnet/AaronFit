@@ -425,7 +425,12 @@ export async function montar(raiz, [idSesion, idRutina], app) {
     };
     if (siguienteSerie === null) {
       const destino = datos.siguientePendiente;
-      app.cronometro.iniciar(resultado.descansoSeg, { texto: destino ? `Sigue: ${destino.nombre}` : '', frases, deshacer: deshacerUltima });
+      app.cronometro.iniciar(resultado.descansoSeg, {
+        texto: destino ? `Sigue: ${destino.nombre}` : '',
+        frases,
+        deshacer: deshacerUltima,
+        respiracion: app.preferencias.respiracion,
+      });
       app.ir(destino ? `#/ejercicio/${sesionId}/${destino.id}` : `#/dia/${sesionId}`, { reemplazar: true });
       avisar();
       if (!sinDescanso && destino) decir(`Sigue: ${destino.nombre}.`);
@@ -439,6 +444,7 @@ export async function montar(raiz, [idSesion, idRutina], app) {
       texto: `Sigue: serie ${siguienteSerie} · ${formato.serie(precarga, e.tipoMedida)}`,
       frases,
       deshacer: deshacerUltima,
+      respiracion: app.preferencias.respiracion,
     });
     avisar();
     if (!sinDescanso) decir(`Sigue: serie ${siguienteSerie}, ${formato.serieHablada(precarga, e.tipoMedida)}.`);

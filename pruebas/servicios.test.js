@@ -559,6 +559,7 @@ test('tanda 3: tu equipo y tus preferencias, guardados en estado', async () => {
   const equipo = await ajustes.equipo();
   assert.equal(equipo.maneral, 5);
   assert.equal(equipo.barra, 20, 'lo que no cambiaste se queda');
-  assert.deepEqual(await ajustes.preferencias(), { voz: false }, 'la voz viene apagada');
-  assert.deepEqual(await ajustes.guardarPreferencias({ voz: true }), { voz: true });
+  assert.deepEqual(await ajustes.preferencias(), { voz: false, respiracion: true }, 'la voz viene apagada; la guía de respiración, encendida');
+  assert.deepEqual(await ajustes.guardarPreferencias({ voz: true }), { voz: true, respiracion: true });
+  assert.deepEqual(await ajustes.guardarPreferencias({ respiracion: false }), { voz: true, respiracion: false });
 });

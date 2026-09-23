@@ -41,15 +41,21 @@ export async function montar(raiz, _parametros, app) {
   const tope = crearSpinner({ etiqueta: 'Tope por mancuerna', valor: equipo.topeMancuerna, paso: 5, min: 5, max: 200, sufijo: 'lb' });
   const lb = discos(TAMANOS_LB, equipo.discosLb, 'lb');
   const texto = h('textarea', { class: 'entrada-nota', rows: '8' }, equipo.texto);
-  const voz = h('input', { type: 'checkbox', checked: Boolean(app.preferencias.voz) });
-  voz.addEventListener('change', async () => {
-    try {
-      app.preferencias = await app.servicios.ajustes.guardarPreferencias({ voz: voz.checked });
-      app.aviso(voz.checked ? 'Voz encendida' : 'Voz apagada');
-    } catch (error) {
-      app.error(error);
-    }
-  });
+  // Un interruptor del descanso: guarda la preferencia en cuanto lo cambias.
+  const interruptor = (llave, encendida, apagada) => {
+    const caja = h('input', { type: 'checkbox', checked: Boolean(app.preferencias[llave]) });
+    caja.addEventListener('change', async () => {
+      try {
+        app.preferencias = await app.servicios.ajustes.guardarPreferencias({ [llave]: caja.checked });
+        app.aviso(caja.checked ? encendida : apagada);
+      } catch (error) {
+        app.error(error);
+      }
+    });
+    return caja;
+  };
+  const voz = interruptor('voz', 'Voz encendida', 'Voz apagada');
+  const respiracion = interruptor('respiracion', 'Guía de respiración encendida', 'Guía de respiración apagada');
 
   pintar(
     raiz,
@@ -76,7 +82,8 @@ export async function montar(raiz, _parametros, app) {
     h(
       'section',
       { class: 'tarjeta' },
-      h('h2', {}, 'Voz en el descanso'),
+      h('h2', {}, 'En el descanso'),
+      h('label', { class: 'interruptor' }, respiracion, h('span', {}, h('strong', {}, 'Guía de respiración'), h('small', {}, '«Inhala… / Exhala…» dentro del anillo, a su ritmo: 4 s y 6 s.'))),
       h('label', { class: 'interruptor' }, voz, h('span', {}, h('strong', {}, 'Decir la siguiente serie'), h('small', {}, 'Al empezar el descanso, p. ej. «Sigue: serie 2, 55 kilos por 8».'))),
       h('p', { class: app.voz.disponible ? 'nota' : 'nota aviso' }, app.voz.disponible ? `Voz: ${app.voz.nombre}.` : 'Este teléfono no tiene (o todavía no carga) una voz en español.'),
       h('button', { type: 'button', class: 'boton ancho', onclick: probar }, 'Probar la voz'),
