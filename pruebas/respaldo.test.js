@@ -4,7 +4,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { RUTINA } from '../docs/js/datos/semilla.js';
-import { armarRespaldo, FORMATO, nombreArchivo, validarRespaldo } from '../docs/js/logica/respaldo.js';
+import { armarRespaldo, FORMATO, historialTSV, nombreArchivo, nombreHistorial, recordatorioRespaldo, validarRespaldo } from '../docs/js/logica/respaldo.js';
 
 function muestra() {
   return {
@@ -93,4 +93,35 @@ test('versión de formato desconocida: se rechaza con mensaje claro', () => {
 
 test('el nombre del archivo lleva la fecha', () => {
   assert.equal(nombreArchivo('2026-09-22'), 'aaronfit-respaldo-2026-09-22.json');
+});
+
+test('historial para Sheets: un renglón por registro, en orden, con los lados y las saltadas', () => {
+  const datos = muestra();
+  const base = datos.series[0];
+  datos.series = [
+    { ...base, id: 4, rutinaId: 101, numeroSerie: 1, peso: null, unidadPeso: 'corporal', repsHechas: null, segundos: 25, lado: 'der', rirReportado: null },
+    { ...base, id: 3, numeroSerie: 2, repsHechas: null, peso: null, rirReportado: null, completada: false },
+    base,
+    { ...base, id: 5, rutinaId: 101, numeroSerie: 1, peso: null, unidadPeso: 'corporal', repsHechas: null, segundos: 30, lado: 'izq', rirReportado: null },
+  ];
+  datos.sesiones[0].diaRutina = 'LUNES\tEmpuje A'; // un tabulador no rompe las columnas
+  const renglones = historialTSV(datos).trimEnd().split('\n').map((r) => r.split('\t'));
+  assert.deepEqual(renglones[0], ['Fecha', 'Semana', 'Día', 'Ejercicio', 'Grupo', 'Serie', 'Lado', 'Peso', 'Unidad', 'Reps', 'Segundos', 'Metros', 'RIR', 'Hecha']);
+  assert.equal(renglones.length, 1 + 4);
+  assert.ok(renglones.every((r) => r.length === 14));
+  assert.deepEqual(renglones.slice(1).map((r) => [r[3], r[5], r[6], r[7], r[9], r[10], r[12], r[13]]), [
+    ['Equilibrio en un pie', '1', 'Izquierdo', '', '', '30', '', 'sí'],
+    ['Equilibrio en un pie', '1', 'Derecho', '', '', '25', '', 'sí'],
+    ['Press de banca', '1', '', '50', '10', '', '3', 'sí'],
+    ['Press de banca', '2', '', '', '', '', '', 'no'],
+  ]);
+  assert.equal(renglones[1][2], 'LUNES Empuje A');
+  assert.equal(nombreHistorial('2026-09-23'), 'aaronfit-historial-2026-09-23.tsv');
+});
+
+test('recordatorio de respaldo: más de 7 días, o nunca; sin datos no molesta', () => {
+  assert.deepEqual(recordatorioRespaldo({ ultimo: '2026-09-16', hoy: '2026-09-23', hayDatos: true }), { dias: 7, toca: false });
+  assert.deepEqual(recordatorioRespaldo({ ultimo: '2026-09-15', hoy: '2026-09-23', hayDatos: true }), { dias: 8, toca: true });
+  assert.deepEqual(recordatorioRespaldo({ ultimo: null, hoy: '2026-09-23', hayDatos: true }), { dias: null, toca: true });
+  assert.deepEqual(recordatorioRespaldo({ ultimo: null, hoy: '2026-09-23', hayDatos: false }), { dias: null, toca: false });
 });

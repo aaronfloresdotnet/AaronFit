@@ -4,6 +4,7 @@
 import * as repos from '../datos/repos.js';
 import { cargarVideos } from '../datos/videos.js';
 import { prepararRutina } from './arranque.js';
+import { crearServicioAvance } from './avance.js';
 import { crearServicioEntrenamiento } from './entrenamiento.js';
 import { crearServicioMedidas } from './medidas.js';
 import { crearServicioRespaldo } from './respaldo.js';
@@ -15,6 +16,7 @@ const entrenamiento = crearServicioEntrenamiento({ repos, reloj });
 export const servicios = {
   prepararRutina,
   entrenamiento,
+  avance: crearServicioAvance({ repos, reloj }),
   medidas: crearServicioMedidas({ repos, reloj }),
   respaldo: crearServicioRespaldo({
     repos,

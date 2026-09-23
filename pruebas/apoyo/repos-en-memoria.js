@@ -40,6 +40,7 @@ export function crearReposEnMemoria() {
       guardar: async (sesion) => poner('sesiones', sesion),
     },
     series: {
+      todas: async () => copia(tablas.series),
       deSesion: async (id) => donde('series', (s) => s.sesionId === id),
       deRutinas: async (ids) => donde('series', (s) => ids.includes(s.rutinaId)),
     },
@@ -49,10 +50,11 @@ export function crearReposEnMemoria() {
       if (sesion) poner('sesiones', sesion);
       return ids;
     },
-    deshacerCaptura: async ({ borrarSeries, sesion, borrarEstado = [] }) => {
+    deshacerCaptura: async ({ borrarSeries, sesion, borrarEstado = [], escribirEstado = [] }) => {
       tablas.series = tablas.series.filter((s) => !borrarSeries.includes(s.id));
       if (sesion) poner('sesiones', sesion);
       for (const llave of borrarEstado) tablas.estado.delete(llave);
+      for (const [llave, valor] of escribirEstado) tablas.estado.set(llave, copia(valor));
     },
     medidas: {
       todas: async () => copia(tablas.medidas),

@@ -1,10 +1,12 @@
 // Casos de uso (capa de aplicación) con repositorios en memoria y reloj fijo.
 // Cubren la orquestación: cuándo sale el aviso, qué se precarga después de
-// aceptarlo, correcciones, por lado, terminar a medias, recorrer, medidas y
-// respaldo. NO cubren IndexedDB real: eso se probó en el navegador.
+// aceptarlo, correcciones, por lado, terminar a medias, recorrer, medidas,
+// respaldo y (tanda 2) récords, avance y perfil. NO cubren IndexedDB real:
+// eso se probó en el navegador.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { RUTINA, VERSION_SEMILLA } from '../docs/js/datos/semilla.js';
+import { crearServicioAvance } from '../docs/js/servicios/avance.js';
 import { crearServicioEntrenamiento } from '../docs/js/servicios/entrenamiento.js';
 import { crearServicioMedidas } from '../docs/js/servicios/medidas.js';
 import { crearServicioRespaldo } from '../docs/js/servicios/respaldo.js';
@@ -105,8 +107,11 @@ test('deshacer: quita la última serie y el aviso aceptado después; la precarga
   const aviso = (await hacer(m, id, banca, 10)).at(-1).progresion;
   await m.servicio.aceptarProgresion({ sesionId: id, rutinaId: banca.id, propuesta: aviso });
   assert.equal((await m.repos.estado.leer('referencia:press-de-banca')).peso, 55);
+  const avisos = await m.repos.estado.leer('avisosAceptados');
+  assert.deepEqual(avisos.map((a) => [a.clave, a.sesionId, a.peso]), [['press-de-banca', id, 55]]);
 
   const deshecha = await m.servicio.deshacerUltimaSerie(id);
+  assert.deepEqual(await m.repos.estado.leer('avisosAceptados'), [], 'el aviso deshecho sale de la lista (y de la gráfica)');
   assert.equal(deshecha.rutinaId, banca.id);
   assert.equal(deshecha.numeroSerie, 3);
   assert.deepEqual(deshecha.borrador, { peso: 50, unidadPeso: 'kg', rir: null, valor: 10, lados: null });
@@ -253,4 +258,98 @@ test('respaldo: un archivo corrupto no toca la base; uno bueno la deja idéntica
   assert.equal(destinoRepos.reemplazos, 1);
   assert.deepEqual(await destinoRepos.leerTodo(), await m.repos.leerTodo());
   assert.ok(await destinoRepos.estado.leer('ultimoRespaldo'), 'el archivo trae su propia fecha');
+});
+
+test('récord: la primera vez no; con más peso la semana siguiente sí; en empate o al corregir, no', async () => {
+  const m = await montaje('2026-09-21T15:00:00Z');
+  const banca = porClave('press-de-banca');
+  const semana1 = await m.servicio.iniciarSesion(1);
+  assert.deepEqual((await hacer(m, semana1, banca, 10)).map((r) => r.record), [null, null, null]);
+
+  m.irA('2026-09-28T15:00:00Z');
+  const semana2 = await m.servicio.iniciarSesion(1);
+  const guardar = (k, peso, valor) => {
+    m.avanzar();
+    return m.servicio.guardarSerie({ sesionId: semana2, rutinaId: banca.id, numeroSerie: k, peso, unidadPeso: 'kg', valor });
+  };
+  assert.deepEqual((await guardar(1, 55, 8)).record, { tipo: 'peso', valor: 55, unidad: 'kg' });
+  assert.equal((await guardar(2, 55, 8)).record, null, 'empate');
+  assert.equal((await guardar(2, 60, 8)).record, null, 'corregir nunca avisa');
+});
+
+test('avance: resumen, constancia, gráfica con la marca del aviso, y la semana pasada solo lunes y martes', async () => {
+  const m = await montaje('2026-09-21T15:00:00Z');
+  const banca = porClave('press-de-banca');
+  const semana1 = await m.servicio.iniciarSesion(1);
+  const aviso = (await hacer(m, semana1, banca, 10)).at(-1).progresion;
+  await m.servicio.aceptarProgresion({ sesionId: semana1, rutinaId: banca.id, propuesta: aviso });
+  await m.servicio.terminarSesion(semana1);
+
+  m.irA('2026-09-28T15:00:00Z'); // lunes de la W40
+  const semana2 = await m.servicio.iniciarSesion(1);
+  await hacer(m, semana2, banca, 8); // sale precargado con 55 kg
+  const avance = crearServicioAvance({ repos: m.repos, reloj: m.reloj });
+  const r = await avance.resumen();
+  assert.deepEqual(r.semana.subio.map((s) => [s.clave, s.antes, s.ahora, s.unidad]), [['press-de-banca', 50, 55, 'kg']]);
+  assert.deepEqual(r.semana.series, { hechas: 3, plan: 119 });
+  assert.deepEqual(r.semanaPasada.dias, { hechos: 1, plan: 5 });
+  assert.deepEqual(r.constancia.filas.map((f) => f.dias.map((d) => d.estado)), [
+    ['hecho', 'no_hecho', 'no_hecho', 'no_hecho', 'no_hecho'],
+    ['en_curso', 'por_venir', 'por_venir', 'por_venir', 'por_venir'],
+  ]);
+  assert.deepEqual(r.constancia.cerradas, { semanas: 1, hechos: 1, posibles: 5 });
+  assert.equal(r.porDefecto, 'press-de-banca');
+  assert.deepEqual(r.grupos.find((g) => g.grupo === 'Pecho'), { grupo: 'Pecho', plan: 3, actual: 3, anterior: 3 });
+
+  const g = await avance.ejercicio('press-de-banca');
+  assert.deepEqual(g.puntos.map((p) => [p.fecha, p.peso]), [['2026-09-21', 50], ['2026-09-28', 55]]);
+  assert.deepEqual(g.marcas.map((x) => [x.indice, x.avisos.length, x.avisos[0].peso]), [[0, 1, 55]]);
+  assert.equal(g.records.peso.valor, 55);
+  assert.equal(await avance.ejercicio('no-existe'), null);
+
+  assert.equal((await avance.semanaPasadaParaInicio()).semana, '2026-W39');
+  m.irA('2026-09-30T15:00:00Z'); // miércoles
+  assert.equal(await avance.semanaPasadaParaInicio(), null);
+});
+
+test('medidas: sin perfil no hay % de grasa; con perfil, grasa, cintura/estatura, comparación y fotos', async () => {
+  const repos = crearReposEnMemoria();
+  const medidas = crearServicioMedidas({ repos, reloj: () => new Date('2026-09-26T16:00:00Z') });
+  await medidas.guardar({ fecha: '2026-08-29', valores: { pesoCorporal: 81, cintura: 92, cuello: 40 }, fotosTomadas: true, nota: '' });
+  await medidas.guardar({ fecha: '2026-09-26', valores: { pesoCorporal: 80, cintura: 90, cuello: 40 }, fotosTomadas: false, nota: '' });
+  const sinPerfil = await medidas.datos();
+  assert.equal(sinPerfil.perfil, null);
+  assert.equal(sinPerfil.analisis.grasa, null, 'la fórmula no se supone');
+  await assert.rejects(medidas.guardarPerfil({ estatura: 180, formula: 'otra' }));
+  await assert.rejects(medidas.guardarPerfil({ estatura: 1.8, formula: 'hombre' }));
+
+  await medidas.guardarPerfil({ estatura: 180, formula: 'hombre' });
+  const { analisis } = await medidas.datos();
+  assert.equal(analisis.grasa.fecha, '2026-09-26');
+  assert.ok(Math.abs(analisis.grasa.valor - 18.37) < 0.05, String(analisis.grasa.valor));
+  assert.deepEqual(analisis.cinturaEstatura, { valor: 0.5, fecha: '2026-09-26' });
+  assert.equal(analisis.comparacion.antes, '2026-08-29');
+  assert.deepEqual(analisis.comparacion.cambios.map((c) => [c.campo, c.cambio]), [['pesoCorporal', -1], ['cintura', -2], ['cuello', 0]]);
+  assert.deepEqual(analisis.fotos, { toca: true, ultima: '2026-08-29', dias: 28 });
+  assert.deepEqual(analisis.peso.map((p) => p.valor), [81, 80]);
+});
+
+test('respaldo: el recordatorio (nunca, y a los 8 días) y el TSV, que no cuenta como respaldo', async () => {
+  const m = await montaje('2026-09-21T15:00:00Z');
+  const id = await m.servicio.iniciarSesion(1);
+  await hacer(m, id, porClave('press-de-banca'));
+  const respaldo = crearServicioRespaldo({ repos: m.repos, reloj: m.reloj });
+  assert.deepEqual(await respaldo.situacion(), { fecha: null, cuentas: await m.repos.contar(), dias: null, toca: true });
+
+  const historial = await respaldo.exportarHistorial();
+  assert.equal(historial.nombre, 'aaronfit-historial-2026-09-21.tsv');
+  assert.equal(historial.texto.trimEnd().split('\n').length, 1 + 3);
+  assert.equal(await respaldo.ultimo(), undefined, 'exportar el TSV no mueve la fecha del respaldo');
+
+  await respaldo.exportar();
+  const hoy = await respaldo.situacion();
+  assert.deepEqual([hoy.fecha, hoy.dias, hoy.toca], ['2026-09-21', 0, false]);
+  m.irA('2026-09-29T15:00:00Z');
+  const despues = await respaldo.situacion();
+  assert.deepEqual([despues.dias, despues.toca], [8, true]);
 });
