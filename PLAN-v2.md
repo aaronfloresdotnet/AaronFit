@@ -49,7 +49,14 @@ Falta: el peso del mango de las mancuernas (sin él no se calculan) y si el carr
 Pendiente de tu respuesta: la guía de respiración en el descanso (no se hizo).
 Sin verificar en el cel: la voz (sin internet depende del teléfono) y la calculadora con el dedo.
 
-## Tanda 4: cambiar de rutina con un prompt (sin IA dentro de la app)
+## Tanda 4: hecha (en la beta, esperando aprobación)
+Hecha el 2026-09-23. Decisiones 96 a 108. Pruebas: 146 de 146. Se llega desde Respaldo › Ajustes › Cambiar de rutina.
+La regla de progresión ahora vive en la hoja (columna 14 «Regla»); la semilla no cambió (2485aa8e004a).
+Varias rutinas en el tiempo (campo `plan`, ids N×1000+…, `estado.planes`); respaldo versión 2 solo si hay más de una.
+Sin verificar en el cel: copiar el prompt al portapapeles, y una respuesta real de Claude o Gemini
+(la revisión se probó con respuestas escritas a mano).
+
+Lo que se pidió:
 1. Aarón escribe qué quiere.
 2. La app arma el prompt con: objetivo, equipo, rutina actual en TSV, avance, medidas y notas.
 3. El prompt fija el formato de salida: las 13 columnas de la hoja, una columna de regla con mini-sintaxis, y ligas solo de una lista o «SIN LIGA».
@@ -59,3 +66,8 @@ Sin verificar en el cel: la voz (sin internet depende del teléfono) y la calcul
 
 ## Otras ideas aprobadas, sin tanda asignada
 Compartir respaldo, notificación de fin de descanso con pantalla apagada (no garantizada en Android), pruebas en Android emulado.
+Guía de respiración en el descanso: propuesta y no hecha; esperando respuesta de Aarón.
+
+## Para pasar las tandas a la app real (main)
+Solo cuando Aarón las apruebe en la beta. Antes: exportar respaldo en la app real. Luego fusionar v2 en main,
+etiquetar, `bash herramientas/publicar.sh` desde main, y verificar que la app real abre con sus datos.
