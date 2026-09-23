@@ -64,6 +64,21 @@ Lo que se pidió:
 5. El historial se conserva por nombre de ejercicio.
 6. Hay que generalizar `dias.js` para planes de 3 o 4 días.
 
+## Siguiente (respuestas de Aarón, 2026-09-23; todo en la beta, nada a main)
+Aarón compacta el contexto antes; al volver, hacer esto en `v2`, probar, publicar la beta y reportar:
+1. Mango de las mancuernas: de aluminio, «no cuenta» → `EQUIPO_INICIAL.maneral = 0` en logica/equipo.js.
+   Ojo: si en la beta ya se guardó `maneral: null`, que normalizarEquipo use el inicial (0) en lugar de null.
+   Actualizar el texto de «Tu equipo en palabras» (mango de aluminio; la polea se carga parejo).
+2. Polea: el carro «no cuenta» (0) y se carga IGUAL DE CADA LADO (si no, se desbalancea) →
+   `cargar` de polea como pares por lado: armar(e.polea, 2, 2, discosKg); `pasoDe('polea')` = 2 × disco más chico = 5 kg.
+   Consecuencias a reportar: con tus discos la polea sale en saltos de 5 kg; eversión de tobillo 2.5 kg ya no
+   se puede parejo (mínimo 5); face pull y extensión de tríceps 12 kg → «10 o 15». Ajustar pruebas
+   (equipo.test.js: casos de polea; servicios.test.js: el aviso de face pull dice «10 kg o 15 kg»).
+3. Guía de respiración en el descanso: HACERLA. Diseño propuesto: en la pantalla de descanso, «Inhala… / Exhala…»
+   sincronizado con el anillo que ya «respira» (animación de 10 s: 4 s crece = inhala, 6 s baja = exhala);
+   respetar prefers-reduced-motion; preferencia en «Tu equipo» (encendida por omisión, decisión mía a señalar).
+4. Registrar decisiones en DECISIONES.tsv (109+), actualizar este plan y la memoria, publicar beta, verificar.
+
 ## Otras ideas aprobadas, sin tanda asignada
 Compartir respaldo, notificación de fin de descanso con pantalla apagada (no garantizada en Android), pruebas en Android emulado.
 Guía de respiración en el descanso: propuesta y no hecha; esperando respuesta de Aarón.
