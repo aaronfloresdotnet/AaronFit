@@ -63,6 +63,12 @@ test('tras aceptar un aviso: el peso nuevo y repsMin', () => {
   assert.deepEqual(valores(p), [8, 8, 8]);
 });
 
+test('un aviso aceptado en el mismo instante que la última serie sí manda', () => {
+  const historial = [serie(1, 1, 60, 10), serie(1, 2, 60, 10), serie(1, 3, 60, 10)];
+  const referencia = { hora: historial[2].hora, semanaISO: '2026-W39', peso: 65, unidadPeso: 'kg' };
+  assert.deepEqual(pesos(precargar({ ejercicio: banca, historial, referencia })), [65, 65, 65]);
+});
+
 test('un aviso aceptado ANTES de la última sesión ya no manda', () => {
   const referencia = { hora: hora(), semanaISO: '2026-W39', peso: 65, unidadPeso: 'kg' };
   const historial = [serie(2, 1, 62.5, 9)];

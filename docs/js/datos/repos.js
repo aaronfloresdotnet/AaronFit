@@ -6,6 +6,9 @@ import { ALMACENES, comoPromesa, enTransaccion } from './db.js';
 const leer = (almacen, operacion) =>
   enTransaccion([almacen], 'readonly', (tx) => comoPromesa(operacion(tx.objectStore(almacen))));
 
+const escribir = (almacen, operacion) =>
+  enTransaccion([almacen], 'readwrite', (tx) => comoPromesa(operacion(tx.objectStore(almacen))));
+
 export const rutina = {
   todas: () => leer('rutina', (s) => s.getAll()),
 
@@ -26,7 +29,7 @@ export const sesiones = {
   todas: () => leer('sesiones', (s) => s.getAll()),
   deSemana: (semanaISO) => leer('sesiones', (s) => s.index('semanaISO').getAll(semanaISO)),
   enCurso: () => leer('sesiones', (s) => s.index('estado').getAll('en_curso')),
-  guardar: (sesion) => leer('sesiones', (s) => s.put(sesion)),
+  guardar: (sesion) => escribir('sesiones', (s) => s.put(sesion)),
 };
 
 export const series = {
@@ -59,7 +62,8 @@ export function guardarCaptura({ nuevas, borrar = [], sesion }) {
 export const medidas = {
   todas: () => leer('medidas', (s) => s.getAll()),
   porFecha: (fecha) => leer('medidas', (s) => s.index('fecha').getAll(fecha)),
-  guardar: (medida) => leer('medidas', (s) => s.put(medida)),
+  deSemana: (semanaISO) => leer('medidas', (s) => s.index('semanaISO').getAll(semanaISO)),
+  guardar: (medida) => escribir('medidas', (s) => s.put(medida)),
 };
 
 export const estado = {
@@ -67,7 +71,14 @@ export const estado = {
     const registro = await leer('estado', (s) => s.get(llave));
     return registro ? registro.valor : undefined;
   },
-  escribir: (llave, valor) => leer('estado', (s) => s.put({ llave, valor })),
+  escribir: (llave, valor) => escribir('estado', (s) => s.put({ llave, valor })),
+
+  /** Varios pares [llave, valor] en una sola transacción. */
+  escribirVarias: (pares) =>
+    enTransaccion(['estado'], 'readwrite', (tx) => {
+      const almacen = tx.objectStore('estado');
+      for (const [llave, valor] of pares) almacen.put({ llave, valor });
+    }),
 };
 
 /** Lee las cinco colecciones completas en una sola transacción de lectura. */

@@ -37,6 +37,9 @@ export const sumarDias = (fecha, dias) => deUTC(aUTC(fecha) + dias * DIA_MS);
 
 export const compararFechas = (a, b) => Math.sign(aUTC(a) - aUTC(b));
 
+/** Días de calendario de `desde` a `hasta` (negativo si `hasta` es antes). */
+export const diasEntre = (desde, hasta) => Math.round((aUTC(hasta) - aUTC(desde)) / DIA_MS);
+
 /** Semana ISO, p. ej. '2026-W39'. La semana pertenece al año en que cae su jueves. */
 export function semanaISO(fecha) {
   const jueves = aUTC(fecha) + (4 - diaSemana(fecha)) * DIA_MS;

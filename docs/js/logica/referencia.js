@@ -75,7 +75,8 @@ export function precargar({ ejercicio, historial = [], hoy = [], referencia = nu
 
   const horasHistorial = historial.filter((s) => s.completada).map((s) => s.hora);
   const ultimaHora = horasHistorial.length ? horasHistorial.reduce((a, b) => (b > a ? b : a)) : null;
-  const aviso = referencia && (!ultimaHora || referencia.hora > ultimaHora) ? referencia : null;
+  // El aviso se acepta al cerrar la última serie: puede llevar la misma hora que ella.
+  const aviso = referencia && (!ultimaHora || referencia.hora >= ultimaHora) ? referencia : null;
 
   const pesoPorLado = aviso && 'pesoPorLado' in aviso ? aviso.pesoPorLado : ejercicio.pesoPorLado;
 
