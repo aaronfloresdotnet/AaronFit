@@ -7,7 +7,7 @@
 
 // <archivos> — generado por herramientas/versionar-sw.js; no editar a mano.
 const PREFIJO = 'aaronfit-';
-const VERSION = 'aaronfit-f5007ce375ed';
+const VERSION = 'aaronfit-37821e6e2661';
 const ARCHIVOS = [
   './',
   './css/estilos.css',

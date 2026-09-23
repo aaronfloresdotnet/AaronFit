@@ -36,10 +36,8 @@ export async function montar(raiz, _parametros, app) {
 
   const barra = crearSpinner({ etiqueta: 'Barra olímpica', valor: equipo.barra, paso: 0.5, min: 0, max: 50, sufijo: 'kg' });
   const kg = discos(TAMANOS_KG, equipo.discosKg, 'kg');
-  const polea = crearSpinner({ etiqueta: 'Carro de la polea (si no sabes, 0)', valor: equipo.polea, paso: 0.5, min: 0, max: 50, sufijo: 'kg' });
-  const mango = crearSpinner({
-    etiqueta: 'Mango de cada mancuerna', valor: equipo.maneral, paso: 0.5, min: 0, max: 30, sufijo: 'lb', nulo: true, inicialSiNulo: 5,
-  });
+  const polea = crearSpinner({ etiqueta: 'Carro de la polea (si no cuenta, 0)', valor: equipo.polea, paso: 0.5, min: 0, max: 50, sufijo: 'kg' });
+  const mango = crearSpinner({ etiqueta: 'Mango de cada mancuerna (si no cuenta, 0)', valor: equipo.maneral, paso: 0.5, min: 0, max: 30, sufijo: 'lb' });
   const tope = crearSpinner({ etiqueta: 'Tope por mancuerna', valor: equipo.topeMancuerna, paso: 5, min: 5, max: 200, sufijo: 'lb' });
   const lb = discos(TAMANOS_LB, equipo.discosLb, 'lb');
   const texto = h('textarea', { class: 'entrada-nota', rows: '8' }, equipo.texto);
@@ -57,16 +55,16 @@ export async function montar(raiz, _parametros, app) {
     raiz,
     h('nav', { class: 'barra-superior' }, h('a', { class: 'boton-icono', href: '#/respaldo', 'aria-label': 'Volver' }, '‹'), h('div', { class: 'barra-titulo' }, h('strong', {}, 'Tu equipo')), h('span', { class: 'boton-icono vacio' })),
     h('p', { class: 'nota' }, 'Con esto la app te dice qué discos poner. Los de kg (2 pulgadas) van en la barra y la polea; los de lb (1 pulgada), solo en las mancuernas.'),
-    h('section', { class: 'tarjeta' }, h('h2', {}, 'Barra y polea (kg)'), barra.elemento, polea.elemento, h('p', { class: 'nota' }, 'Discos por pieza: un par son 2.'), kg.elemento),
     h(
       'section',
       { class: 'tarjeta' },
-      h('h2', {}, 'Mancuernas (lb)'),
-      mango.elemento,
-      equipo.maneral === null ? h('p', { class: 'nota aviso' }, 'Falta el peso del mango: pésalo sin discos. Sin ese dato la app no calcula las mancuernas.') : null,
-      tope.elemento,
-      lb.elemento,
+      h('h2', {}, 'Barra y polea (kg)'),
+      barra.elemento,
+      polea.elemento,
+      h('p', { class: 'nota' }, 'La barra y la polea se cargan igual de cada lado. Discos por pieza: un par son 2.'),
+      kg.elemento,
     ),
+    h('section', { class: 'tarjeta' }, h('h2', {}, 'Mancuernas (lb)'), mango.elemento, tope.elemento, lb.elemento),
     h(
       'section',
       { class: 'tarjeta' },

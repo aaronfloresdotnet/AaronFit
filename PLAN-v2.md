@@ -77,7 +77,18 @@ Aarón compacta el contexto antes; al volver, hacer esto en `v2`, probar, public
 3. Guía de respiración en el descanso: HACERLA. Diseño propuesto: en la pantalla de descanso, «Inhala… / Exhala…»
    sincronizado con el anillo que ya «respira» (animación de 10 s: 4 s crece = inhala, 6 s baja = exhala);
    respetar prefers-reduced-motion; preferencia en «Tu equipo» (encendida por omisión, decisión mía a señalar).
-4. Registrar decisiones en DECISIONES.tsv (109+), actualizar este plan y la memoria, publicar beta, verificar.
+4. Nombres entre rutinas (pedido de Aarón, 2026-09-23: «necesitamos forma de garantizar que los nombres entre una
+   rutina actual y la rutina nueva sean iguales»). Eligió las tres capas, «heredar por nombre» y «todo junto»:
+   a) (idea suya) el prompt lleva la lista de nombres de TODAS las rutinas (hoy 34) con la orden de copiarlos exactos.
+      La lista se deriva de las rutinas guardadas (nunca se borran), sin guardarla aparte (decisión mía).
+   b) (mía) al revisar, cada nombre que no está en la lista se compara con ella: si se parece, pregunta «¿es el mismo?»
+      y no deja programar sin respuesta; si sí, se escribe el nombre de siempre. Nunca une solo. Los que no se parecen
+      se pueden unir a mano («es el mismo que…»).
+   c) (mía, hueco de la tanda 4) claves por día: aun con el nombre exacto se perdía el historial (elevación lateral
+      sola o igualada; eversión cambiada en un solo día: los 5 días). Regla elegida: heredar por nombre. Si el
+      ejercicio tenía UNA clave, todos sus renglones nuevos la heredan (aunque difieran entre días); si tenía varias
+      por día (elevación lateral), el mismo día hereda la de ese día y un día nuevo lleva la suya. Solo cambia el importador.
+5. Registrar decisiones en DECISIONES.tsv (109+), actualizar este plan y la memoria, publicar beta, verificar.
 
 ## Otras ideas aprobadas, sin tanda asignada
 Compartir respaldo, notificación de fin de descanso con pantalla apagada (no garantizada en Android), pruebas en Android emulado.

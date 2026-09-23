@@ -1,11 +1,14 @@
 // Tu equipo y la calculadora de discos (tanda 3), con tu inventario real:
 // barra de 20 kg, un par de discos de 2.5, 5, 10, 15 y 20 kg (2 pulgadas, barra
 // y polea) y discos de mancuerna en lb (1 pulgada): 4 de 15, 6 de 10 y 4 de 5.
-// NO cubre el peso del mango de las mancuernas: falta saberlo; se prueba con 0 y 5.
+// Mango de aluminio y carro de la polea: no cuentan (0); la polea se carga
+// igual de cada lado (Aarón, 2026-09-23). También se prueba un mango de 5 lb.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { RUTINA } from '../docs/js/datos/semilla.js';
-import { calentamiento, cargar, EQUIPO_INICIAL, implementoDe, normalizarEquipo, pasoDe, UNIDAD_DE } from '../docs/js/logica/equipo.js';
+import {
+  calentamiento, cargar, EQUIPO_INICIAL, implementoDe, normalizarEquipo, pasoDe, TEXTOS_ANTERIORES, UNIDAD_DE,
+} from '../docs/js/logica/equipo.js';
 
 const equipo = normalizarEquipo(null);
 const conMango = (maneral) => ({ ...equipo, maneral });
@@ -33,17 +36,22 @@ test('barra: el peso incluye la barra; el resto se reparte igual por lado', () =
   assert.deepEqual(carga('barra', 15), { implemento: 'barra', peso: 15, estado: 'imposible', minimo: 20 });
 });
 
-test('polea y landmine: los discos van juntos y se pueden usar los dos del par', () => {
-  assert.deepEqual(carga('polea', 12), { implemento: 'polea', peso: 12, estado: 'aproximado', cercanos: [10, 12.5] });
-  assert.deepEqual(carga('polea', 12.5).discos, [10, 2.5]);
-  assert.deepEqual(carga('polea', 2.5).discos, [2.5]);
-  assert.deepEqual(carga('polea', 105).discos, [20, 20, 15, 15, 10, 10, 5, 5, 2.5, 2.5]);
+test('polea: igual de cada lado, así que sube de 5 en 5 kg; landmine: en una punta', () => {
+  assert.deepEqual(carga('polea', 15), { implemento: 'polea', peso: 15, estado: 'exacto', discos: [5, 2.5] }); // por lado
+  assert.deepEqual(carga('polea', 12), { implemento: 'polea', peso: 12, estado: 'aproximado', cercanos: [10, 15] }); // face pull de tu hoja
+  assert.deepEqual(carga('polea', 12.5).cercanos, [10, 15]);
+  assert.deepEqual(carga('polea', 2.5).cercanos, [5], 'eversión de tobillo: 1.25 por lado no sale; «nada» no se ofrece');
+  assert.deepEqual(carga('polea', 105).discos, [20, 15, 10, 5, 2.5]);
+  assert.deepEqual(carga('polea', 110).cercanos, [105]);
+  assert.deepEqual(carga('polea', 20, { ...equipo, polea: 5 }).discos, [5, 2.5]); // si el carro pesara algo, se descuenta
   assert.deepEqual(carga('landmine', 20).discos, [20]); // en la hoja, «20 kg + barra»: la barra no se cuenta
-  assert.equal(carga('polea', 20, { ...equipo, polea: 5 }).discos.join(), '15'); // si el carro pesa algo, se descuenta
+  assert.deepEqual(carga('landmine', 2.5).discos, [2.5]);
 });
 
-test('mancuernas: sin el peso del mango no se calcula; con mango, extremos iguales y dos mancuernas a la vez', () => {
-  assert.equal(carga('mancuernas', 35).estado, 'falta-mango');
+test('mancuernas: mango de aluminio (0), extremos iguales y dos mancuernas a la vez', () => {
+  assert.deepEqual(carga('mancuernas', 30).discos, [15]); // 15 + 15 en cada mancuerna
+  assert.deepEqual(carga('mancuernas', 35).cercanos, [30, 40], 'con discos de 5 lb en los dos extremos, cada mancuerna sube de 10 en 10');
+  assert.deepEqual(carga('mancuernas', 50).discos, [15, 10]);
   assert.deepEqual(carga('mancuernas', 35, conMango(5)).discos, [15]); // 5 + 15 + 15
   assert.deepEqual(carga('mancuernas', 30, conMango(5)).cercanos, [25, 35]); // con discos de 5 lb el salto es de 10
   assert.deepEqual(carga('mancuernas', 65, conMango(5)).discos, [15, 10, 5]); // 30 lb por extremo sin 8 discos de 15
@@ -53,7 +61,7 @@ test('mancuernas: sin el peso del mango no se calcula; con mango, extremos igual
 });
 
 test('paso del botón +: el salto más chico que se puede cargar', () => {
-  assert.deepEqual(['barra', 'polea', 'landmine', 'mancuernas', 'mancuerna', null].map((i) => pasoDe(i, equipo)), [5, 2.5, 2.5, 10, 10, null]);
+  assert.deepEqual(['barra', 'polea', 'landmine', 'mancuernas', 'mancuerna', null].map((i) => pasoDe(i, equipo)), [5, 5, 2.5, 10, 10, null]);
 });
 
 test('calentamiento: barra sola × 10, ~50 % × 5 y ~75 % × 3, hacia abajo y a pesos que sí se cargan', () => {
@@ -72,4 +80,12 @@ test('tu equipo guardado se completa con lo inicial y descarta valores rotos', (
   assert.equal(editado.barra, 20);
   assert.deepEqual(editado.discosLb, [{ peso: 2.5, cuantos: 4 }]);
   assert.equal(editado.discosKg.length, 5);
+});
+
+test('lo guardado en la tanda 3: el mango «falta saberlo» pasa a 0 y el texto sin tocar se actualiza', () => {
+  assert.equal(normalizarEquipo(null).maneral, 0);
+  assert.equal(normalizarEquipo({ maneral: null }).maneral, 0);
+  assert.equal(normalizarEquipo({ texto: TEXTOS_ANTERIORES[0] }).texto, EQUIPO_INICIAL.texto);
+  assert.match(EQUIPO_INICIAL.texto, /igual de cada lado/);
+  assert.equal(normalizarEquipo({ texto: 'Mi texto' }).texto, 'Mi texto', 'si lo editaste, se queda el tuyo');
 });

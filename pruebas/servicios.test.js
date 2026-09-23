@@ -461,7 +461,7 @@ test('tanda 4: prompt, revisar, programar desde el lunes; el historial de press 
     seriesSemana: 12,
   });
   assert.ok(revision.avisos.some((a) => a.startsWith('Renglón 4 (Remo con barra): la liga no es de la lista')));
-  assert.ok(revision.avisos.includes('Face pull con cuerda: 12 kg no sale exacto con tus discos (10 kg o 12.5 kg).'));
+  assert.ok(revision.avisos.includes('Face pull con cuerda: 12 kg no sale exacto con tus discos (10 kg o 15 kg).'));
   assert.deepEqual(revision.diferencias.nuevos, ['Remo con barra', 'Sentadilla con barra']);
   assert.equal(await m.repos.estado.leer('planes'), undefined, 'revisar no guarda nada');
 
@@ -511,7 +511,7 @@ test('tanda 4: la rutina programada se puede reemplazar o quitar antes de que em
 test('tanda 3: tu equipo y tus preferencias, guardados en estado', async () => {
   const repos = crearReposEnMemoria();
   const ajustes = crearServicioAjustes({ repos });
-  assert.equal((await ajustes.equipo()).maneral, null, 'el peso del mango falta hasta que lo pongas');
+  assert.equal((await ajustes.equipo()).maneral, 0, 'el mango de aluminio no cuenta');
   await ajustes.guardarEquipo({ maneral: 5 });
   const equipo = await ajustes.equipo();
   assert.equal(equipo.maneral, 5);
