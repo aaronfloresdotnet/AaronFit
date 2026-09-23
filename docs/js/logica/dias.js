@@ -41,7 +41,8 @@ export function planSemana({ hoy, sesiones, decisiones = DECISIONES_VACIAS }) {
 
   // Primero se resuelve el día perdido más antiguo; la app pregunta, no decide.
   const vencido = dias.find((d) => d.estado === 'vencido')?.dia ?? null;
-  const deHoy = dias.find((d) => d.estado === 'hoy')?.dia ?? null;
+  // Lo de hoy sigue siendo de hoy aunque ya esté en curso (al reabrir se retoma).
+  const deHoy = dias.find((d) => d.programado === hoy && ['hoy', 'en_curso'].includes(d.estado))?.dia ?? null;
   return {
     dias,
     vencido,

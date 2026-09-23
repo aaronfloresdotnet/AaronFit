@@ -95,6 +95,14 @@ test('una sesión en curso no se pregunta; una abandonada cuenta como no hecha',
   assert.equal(abandonada.vencido, 1);
 });
 
+test('el día de hoy ya empezado sigue siendo lo que toca hoy (al reabrir se retoma)', () => {
+  const plan = planSemana({ hoy: 1, sesiones: [sesion(1, 'en_curso')] });
+  assert.equal(plan.hoyToca, 1);
+  assert.equal(plan.dias[0].estado, 'en_curso');
+  const recorrido = planSemana({ hoy: 2, sesiones: [sesion(1, 'en_curso')], decisiones: recorrer(DECISIONES_VACIAS, 1, 2) });
+  assert.equal(recorrido.hoyToca, 1);
+});
+
 test('recorrer otra vez solo puede correr más, nunca regresar', () => {
   const una = recorrer(DECISIONES_VACIAS, 1, 2);
   assert.equal(recorrer(una, 2, 3).desplazamiento, 1);

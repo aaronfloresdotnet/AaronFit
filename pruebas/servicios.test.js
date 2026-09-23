@@ -85,6 +85,19 @@ test('aceptar el aviso: la semana siguiente sale el peso nuevo con repsMin; "aho
   assert.deepEqual((await hacer(m, semana2, inclinado)).at(-1).progresion, { tipo: 'peso', peso: 35, unidadPeso: 'kg', libre: false });
 });
 
+test('al volver a inicio con el entrenamiento de hoy empezado, se ofrece continuarlo', async () => {
+  const m = await montaje('2026-09-22T15:00:00Z'); // martes, sin lunes
+  await m.servicio.decidirDiaVencido(1, 'recorrer');
+  const id = await m.servicio.iniciarSesion(1);
+  await m.servicio.guardarSerie({ sesionId: id, rutinaId: 101, numeroSerie: 1, peso: null, unidadPeso: 'corporal', valor: 30 });
+  const inicio = await m.servicio.resumenInicio();
+  assert.equal(inicio.hoyToca.dia, 1);
+  assert.equal(inicio.enCurso.id, id);
+  assert.equal(inicio.enCurso.hechas, 1);
+  assert.equal(inicio.enCurso.total, 22);
+  assert.equal(await m.servicio.iniciarSesion(1), id, 'continuar reusa la misma sesión');
+});
+
 test('corregir una serie la sobreescribe: mismo registro, sin aviso repetido', async () => {
   const m = await montaje('2026-09-21T15:00:00Z');
   const banca = porClave('press-de-banca');

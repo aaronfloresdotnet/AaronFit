@@ -5,7 +5,7 @@
 // Al cambiar VERSION se instala la caché nueva y se borra la vieja.
 
 // <archivos> — generado por herramientas/versionar-sw.js; no editar a mano.
-const VERSION = 'aaronfit-a73251725381';
+const VERSION = 'aaronfit-47f1c15cbe8b';
 const ARCHIVOS = [
   './',
   './css/estilos.css',
