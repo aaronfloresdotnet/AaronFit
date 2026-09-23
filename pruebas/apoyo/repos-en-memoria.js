@@ -31,6 +31,12 @@ export function crearReposEnMemoria() {
         }
         tablas.estado.set('versionSemilla', version);
       },
+      cambiarPlanes: async ({ agregar = [], quitar = [], planes }) => {
+        const restantes = tablas.rutina.filter((r) => !quitar.includes(r.id));
+        for (const r of agregar) if (restantes.some((x) => x.id === r.id)) throw new Error(`id repetido: ${r.id}`);
+        tablas.rutina = [...restantes, ...copia(agregar)];
+        tablas.estado.set('planes', copia(planes));
+      },
     },
     sesiones: {
       obtener: async (id) => copia(tablas.sesiones.find((s) => s.id === id)),

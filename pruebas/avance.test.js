@@ -23,8 +23,8 @@ const RUTINA = [
   fila(301, 3, 1, 'remo', { grupo: 'Espalda' }),
   fila(401, 4, 1, 'sentadilla', { grupo: 'Cuádriceps' }),
   fila(501, 5, 1, 'curl', { grupo: 'Bíceps', unidadPeso: 'lb', pesoPorLado: true }),
-  fila(601, 6, 1, 'caminata', { grupo: 'Caminata', series: 1, tipoMedida: 'minutos', unidadPeso: 'corporal', progresionRegla: { tipo: 'manual' } }),
-  fila(701, 7, 1, 'caminata', { grupo: 'Caminata', series: 1, tipoMedida: 'minutos', unidadPeso: 'corporal', progresionRegla: { tipo: 'manual' } }),
+  fila(601, 6, 1, 'caminata', { dia: 'SÁBADO - Caminata', grupo: 'Caminata', series: 1, tipoMedida: 'minutos', unidadPeso: 'corporal', progresionRegla: { tipo: 'manual' } }),
+  fila(701, 7, 1, 'caminata', { dia: 'DOMINGO - Caminata', grupo: 'Caminata', series: 1, tipoMedida: 'minutos', unidadPeso: 'corporal', progresionRegla: { tipo: 'manual' } }),
 ];
 
 const sesion = (id, fecha, semanaISO, diaSemanaPlan, extra = {}) => ({
@@ -177,10 +177,28 @@ test('constancia: hecho, recorrido, saltado, no hecho, antes de empezar y la sem
 test('series por grupo: esta semana contra la anterior, sin contar dos veces el mismo lado', () => {
   const { series } = historial();
   series.push(serie(6, '2026-W40', 101, 1, null, 28, { lado: 'der' })); // el otro lado de una serie ya contada
-  const grupos = seriesPorGrupo({ rutina: RUTINA, series, actual: '2026-W40', anterior: '2026-W39' });
-  assert.deepEqual(grupos.map((g) => [g.grupo, g.plan, g.actual, g.anterior]), [
-    ['Tobillo', 4, 3, 4], ['Pecho', 3, 3, 3], ['Core', 2, 2, 2], ['Espalda', 2, 0, 1], ['Cuádriceps', 2, 0, 2], ['Bíceps', 2, 0, 0],
+  const grupos = seriesPorGrupo({ actual: { semana: '2026-W40', rutina: RUTINA }, anterior: { semana: '2026-W39', rutina: RUTINA }, series });
+  assert.deepEqual(grupos.map((g) => [g.grupo, g.actual.hechas, g.actual.plan, g.anterior.hechas, g.anterior.plan]), [
+    ['Tobillo', 3, 4, 4, 4], ['Pecho', 3, 3, 3, 3], ['Core', 2, 2, 2, 2], ['Espalda', 0, 2, 1, 2], ['Cuádriceps', 0, 2, 2, 2], ['Bíceps', 0, 2, 0, 2],
   ]);
+  // Tanda 4: si cambió la rutina, cada semana se cuenta contra la suya.
+  const soloPecho = RUTINA.filter((r) => r.grupo === 'Pecho');
+  const cambio = seriesPorGrupo({ actual: { semana: '2026-W40', rutina: soloPecho }, anterior: { semana: '2026-W39', rutina: RUTINA }, series });
+  assert.deepEqual(cambio.find((g) => g.grupo === 'Tobillo'), { grupo: 'Tobillo', actual: { hechas: 0, plan: 0 }, anterior: { hechas: 4, plan: 4 } });
+});
+
+test('constancia con una rutina de 3 días: columnas de todas las semanas; lo que no tocaba no cuenta', () => {
+  const sesiones = [sesion(1, '2026-09-21', '2026-W39', 1), sesion(2, '2026-09-28', '2026-W40', 1), sesion(3, '2026-09-30', '2026-W40', 3)];
+  const r = constancia({
+    semanas: ['2026-W39', '2026-W40'],
+    sesiones,
+    decisiones: {},
+    hoy: { semana: '2026-W41', dia: 1 },
+    diasPorSemana: { '2026-W39': { fuerza: [1, 2, 3, 4, 5], caminata: [6, 7] }, '2026-W40': { fuerza: [1, 3, 5], caminata: [6] } },
+  });
+  assert.deepEqual(r.columnas, [1, 2, 3, 4, 5]);
+  assert.deepEqual(r.filas[1].dias.map((d) => d.estado), ['hecho', 'no_aplica', 'hecho', 'no_aplica', 'no_hecho']);
+  assert.deepEqual(r.filas.map((f) => [f.hechos, f.cuentan]), [[1, 5], [2, 3]]);
 });
 
 test('lista de ejercicios, el que se abre primero y dónde van los avisos aceptados', () => {

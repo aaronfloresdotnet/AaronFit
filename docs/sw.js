@@ -7,7 +7,7 @@
 
 // <archivos> — generado por herramientas/versionar-sw.js; no editar a mano.
 const PREFIJO = 'aaronfit-';
-const VERSION = 'aaronfit-630ba16cf666';
+const VERSION = 'aaronfit-f5007ce375ed';
 const ARCHIVOS = [
   './',
   './css/estilos.css',
@@ -41,6 +41,7 @@ const ARCHIVOS = [
   './js/logica/parseo.js',
   './js/logica/plan.js',
   './js/logica/progresion.js',
+  './js/logica/prompt.js',
   './js/logica/referencia.js',
   './js/logica/respaldo.js',
   './js/logica/semana.js',
@@ -58,6 +59,7 @@ const ARCHIVOS = [
   './js/servicios/contenedor.js',
   './js/servicios/entrenamiento.js',
   './js/servicios/medidas.js',
+  './js/servicios/plan.js',
   './js/servicios/respaldo.js',
   './js/vistas/avance.js',
   './js/vistas/dia.js',
@@ -66,6 +68,7 @@ const ARCHIVOS = [
   './js/vistas/inicio.js',
   './js/vistas/medidas.js',
   './js/vistas/respaldo.js',
+  './js/vistas/rutina.js',
   './manifest.webmanifest',
 ];
 // </archivos>

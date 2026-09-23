@@ -10,7 +10,9 @@ import { crearServicioAjustes } from '../docs/js/servicios/ajustes.js';
 import { crearServicioAvance } from '../docs/js/servicios/avance.js';
 import { crearServicioEntrenamiento } from '../docs/js/servicios/entrenamiento.js';
 import { crearServicioMedidas } from '../docs/js/servicios/medidas.js';
+import { crearServicioPlan } from '../docs/js/servicios/plan.js';
 import { crearServicioRespaldo } from '../docs/js/servicios/respaldo.js';
+import { COLUMNAS_RUTINA } from '../docs/js/logica/plan.js';
 import { crearReposEnMemoria } from './apoyo/repos-en-memoria.js';
 
 process.env.TZ = 'America/Mexico_City';
@@ -313,7 +315,7 @@ test('avance: resumen, constancia, gráfica con la marca del aviso, y la semana 
   ]);
   assert.deepEqual(r.constancia.cerradas, { semanas: 1, hechos: 1, posibles: 5 });
   assert.equal(r.porDefecto, 'press-de-banca');
-  assert.deepEqual(r.grupos.find((g) => g.grupo === 'Pecho'), { grupo: 'Pecho', plan: 3, actual: 3, anterior: 3 });
+  assert.deepEqual(r.grupos.find((g) => g.grupo === 'Pecho'), { grupo: 'Pecho', actual: { hechas: 3, plan: 3 }, anterior: { hechas: 3, plan: 3 } });
 
   const g = await avance.ejercicio('press-de-banca');
   assert.deepEqual(g.puntos.map((p) => [p.fecha, p.peso]), [['2026-09-21', 50], ['2026-09-28', 55]]);
@@ -405,6 +407,105 @@ test('tanda 3: nota por ejercicio (guardar y borrar) y aviso de estancamiento a 
   assert.deepEqual((await m.servicio.datosEjercicio(id, banca.id)).estancado, { semanas: 3, sesiones: 3, desde: '2026-09-21', estancado: true });
   const avance = crearServicioAvance({ repos: m.repos, reloj: m.reloj });
   assert.deepEqual((await avance.resumen()).estancados.map((e) => [e.clave, e.semanas]), [['press-de-banca', 3]]);
+});
+
+// Tanda 4: una rutina de 3 días como la devolvería la IA (con texto alrededor).
+const RESPUESTA_IA = [
+  'Aquí tienes tu rutina nueva:',
+  '```tsv',
+  COLUMNAS_RUTINA.join('\t'),
+  ['LUNES - Fuerza A', '1', 'Pecho', 'Press de banca', 'Barra + banco plano + postes J', '-', '50 kg', '3', '8-10', '3', '2-3 min', 'Cuando hagas 10/10/10, sube 5 kg', 'https://musclewiki.com/exercise/barbell-bench-press', 'todas 10 +5 kg'].join('\t'),
+  ['LUNES - Fuerza A', '2', 'Cara posterior', 'Face pull con cuerda', 'Polea a la altura de la cara', 'Cuerda', '12 kg', '3', '15-20', '2', '60 s', 'Cuando hagas 20/20/20, sube 2.5 kg', 'SIN LIGA', 'todas 20 +2.5 kg'].join('\t'),
+  ['MIÉRCOLES - Fuerza B', '1', 'Espalda', 'Remo con barra', 'Barra', '-', '40 kg', '3', '8-10', '2', '2 min', 'Cuando hagas 10/10/10, sube 5 kg', 'https://inventada.com/remo', 'todas 10 +5 kg'].join('\t'),
+  ['VIERNES - Fuerza C', '1', 'Cuádriceps', 'Sentadilla con barra', 'Barra + postes J', '-', '40 kg', '3', '8-10', '2', '3 min', 'Cuando hagas 10/10/10, sube 5 kg', 'SIN LIGA', 'todas 10 +5 kg'].join('\t'),
+  ['SÁBADO - Caminata', '1', 'Caminata', 'Paseo con los perros', 'Ninguno', '-', '-', '1', '30 min', '-', '-', 'Ya lo haces; no cambiar nada', 'SIN LIGA', 'manual'].join('\t'),
+  '```',
+  '¡Éxito!',
+].join('\n');
+
+test('tanda 4: prompt, revisar, programar desde el lunes; el historial de press de banca sigue', async () => {
+  const m = await montaje('2026-09-21T15:00:00Z'); // lunes W39
+  const banca = porClave('press-de-banca');
+  const semana1 = await m.servicio.iniciarSesion(1);
+  const aviso = (await hacer(m, semana1, banca, 10)).at(-1).progresion;
+  await m.servicio.aceptarProgresion({ sesionId: semana1, rutinaId: banca.id, propuesta: aviso }); // la próxima vez: 55 kg
+  const plan = crearServicioPlan({
+    repos: m.repos,
+    reloj: m.reloj,
+    ligasConVideo: async () => ['https://musclewiki.com/exercise/barbell-bench-press'],
+    despuesDeCambiar: () => m.servicio.olvidarRutina(),
+  });
+
+  const { texto } = await plan.prompt({ queQuiero: 'Quiero entrenar 3 días', conMedidas: false });
+  assert.match(texto, /## Lo que quiero\nQuiero entrenar 3 días/);
+  assert.match(texto, /Press de banca \(lunes\): última vez 21 sep: 50 kg × 10, 50 kg × 10, 50 kg × 10; récord 50 kg\./);
+  assert.ok(texto.includes(COLUMNAS_RUTINA.join('\t')), 'la rutina actual va en el formato de respuesta');
+  assert.doesNotMatch(texto, /## Mis medidas/, 'sin medidas si así lo pides');
+
+  const malo = await plan.revisar(RESPUESTA_IA.replace('50 kg', 'pesado'));
+  assert.equal(malo.ok, false);
+  assert.match(malo.errores[0], /^Renglón 2: Peso no reconocido/);
+
+  const revision = await plan.revisar(RESPUESTA_IA);
+  assert.equal(revision.ok, true);
+  assert.equal(revision.numero, 2);
+  assert.equal(revision.desde, '2026-W40');
+  assert.deepEqual(revision.resumen, {
+    dias: [
+      { dia: 'LUNES - Fuerza A', ejercicios: 2 }, { dia: 'MIÉRCOLES - Fuerza B', ejercicios: 1 },
+      { dia: 'VIERNES - Fuerza C', ejercicios: 1 }, { dia: 'SÁBADO - Caminata', ejercicios: 1 },
+    ],
+    diasFuerza: 3,
+    diasCaminata: 1,
+    ejercicios: 5,
+    seriesSemana: 12,
+  });
+  assert.ok(revision.avisos.some((a) => a.startsWith('Renglón 4 (Remo con barra): la liga no es de la lista')));
+  assert.ok(revision.avisos.includes('Face pull con cuerda: 12 kg no sale exacto con tus discos (10 kg o 12.5 kg).'));
+  assert.deepEqual(revision.diferencias.nuevos, ['Remo con barra', 'Sentadilla con barra']);
+  assert.equal(await m.repos.estado.leer('planes'), undefined, 'revisar no guarda nada');
+
+  assert.deepEqual(await plan.programar(RESPUESTA_IA), { ok: true, numero: 2, desde: '2026-W40', avisos: revision.avisos });
+  assert.equal((await m.repos.rutina.todas()).length, 43 + 5);
+
+  // Lo que queda de esta semana sigue con tu rutina de siempre.
+  m.irA('2026-09-22T15:00:00Z'); // martes W39
+  assert.equal((await m.servicio.resumenInicio()).hoyToca.nombre, 'MARTES - Pierna A');
+
+  // El lunes entra la nueva: 3 días de fuerza y caminata el sábado.
+  m.irA('2026-09-28T15:00:00Z');
+  const inicio = await m.servicio.resumenInicio();
+  assert.equal(inicio.hoyToca.nombre, 'LUNES - Fuerza A');
+  assert.equal(inicio.semanaPrograma, 1);
+  assert.deepEqual(inicio.dias.map((d) => d.dia), [1, 3, 5, 6]);
+  const lunes = await m.servicio.iniciarSesion(1);
+  const dia = await m.servicio.datosDia(lunes);
+  assert.deepEqual(dia.ejercicios.map((x) => x.ejercicio.id), [2101, 2102]);
+  const { precarga } = await m.servicio.datosEjercicio(lunes, 2101);
+  assert.deepEqual(precarga.map((p) => [p.peso, p.valor]), [[55, 8], [55, 8], [55, 8]], 'el aviso aceptado en la rutina 1 sigue');
+
+  const avance = crearServicioAvance({ repos: m.repos, reloj: m.reloj });
+  const r = await avance.resumen();
+  assert.deepEqual(r.semana.dias, { hechos: 0, plan: 3 });
+  assert.deepEqual(r.semana.series, { hechas: 0, plan: 12 });
+});
+
+test('tanda 4: la rutina programada se puede reemplazar o quitar antes de que empiece', async () => {
+  const m = await montaje('2026-09-23T15:00:00Z'); // miércoles W39
+  const plan = crearServicioPlan({ repos: m.repos, reloj: m.reloj, despuesDeCambiar: () => m.servicio.olvidarRutina() });
+  await plan.programar(RESPUESTA_IA);
+  const otra = RESPUESTA_IA.replace('Remo con barra', 'Remo Pendlay');
+  const reemplazo = await plan.programar(otra);
+  assert.equal(reemplazo.numero, 2, 'reemplaza a la programada, no crea otra');
+  const rutina = await m.repos.rutina.todas();
+  assert.equal(rutina.length, 43 + 5);
+  assert.ok(rutina.some((r) => r.ejercicio === 'Remo Pendlay'));
+  assert.equal((await plan.situacion()).programado.numero, 2);
+
+  assert.deepEqual(await plan.quitarProgramada(), { ok: true });
+  assert.equal((await m.repos.rutina.todas()).length, 43);
+  assert.equal((await plan.situacion()).programado, null);
+  assert.equal((await plan.quitarProgramada()).ok, false);
 });
 
 test('tanda 3: tu equipo y tus preferencias, guardados en estado', async () => {

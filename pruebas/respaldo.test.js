@@ -76,10 +76,10 @@ test('archivo con datos rotos: colección faltante, campo inválido, llave repet
 });
 
 test('versión de formato desconocida: se rechaza con mensaje claro', () => {
-  const nueva = validarRespaldo(armarTexto(muestra(), { version: 2 }));
+  const nueva = validarRespaldo(armarTexto(muestra(), { version: 3 }));
   assert.equal(nueva.ok, false);
-  assert.match(nueva.error, /versión 2 del formato/);
-  assert.match(nueva.error, /hasta la 1/);
+  assert.match(nueva.error, /versión 3 del formato/);
+  assert.match(nueva.error, /hasta la 2/);
   assert.match(nueva.error, /Actualiza la app/);
 
   const sinVersion = validarRespaldo(armarTexto(muestra(), { version: undefined }));
@@ -89,6 +89,17 @@ test('versión de formato desconocida: se rechaza con mensaje claro', () => {
   const otroFormato = validarRespaldo(armarTexto(muestra(), { formato: 'otra-app' }));
   assert.match(otroFormato.error, /no es un respaldo de AaronFit/);
   assert.equal(FORMATO, 'aaronfit-respaldo');
+});
+
+test('tanda 4: con una sola rutina el respaldo sigue siendo versión 1 (la v1.0 lo lee); con dos, versión 2', () => {
+  const una = muestra();
+  assert.equal(armarRespaldo(una, { exportado: 'x' }).version, 1);
+  const dos = muestra();
+  dos.rutina.push({ ...dos.rutina[0], id: 2101, plan: 2 });
+  const respaldo = armarRespaldo(dos, { exportado: 'x' });
+  assert.equal(respaldo.version, 2);
+  assert.equal(validarRespaldo(respaldo).ok, true, 'esta app lee la versión 2');
+  assert.equal(validarRespaldo({ ...armarRespaldo(una, { exportado: 'x' }), version: 1 }).ok, true, 'y la 1');
 });
 
 test('el nombre del archivo lleva la fecha', () => {
