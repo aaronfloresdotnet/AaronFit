@@ -6,6 +6,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { RUTINA, VERSION_SEMILLA } from '../docs/js/datos/semilla.js';
+import { crearServicioAjustes } from '../docs/js/servicios/ajustes.js';
 import { crearServicioAvance } from '../docs/js/servicios/avance.js';
 import { crearServicioEntrenamiento } from '../docs/js/servicios/entrenamiento.js';
 import { crearServicioMedidas } from '../docs/js/servicios/medidas.js';
@@ -365,4 +366,55 @@ test('respaldo: el recordatorio (nunca, y a los 8 días) y el TSV, que no cuenta
   m.irA('2026-09-29T15:00:00Z');
   const despues = await respaldo.situacion();
   assert.deepEqual([despues.dias, despues.toca], [8, true]);
+});
+
+test('tanda 3: calentamiento solo en el primer ejercicio con barra del día y antes de su primera serie', async () => {
+  const m = await montaje('2026-09-21T15:00:00Z');
+  const banca = porClave('press-de-banca');
+  const inclinado = porClave('press-inclinado-con-barra');
+  const id = await m.servicio.iniciarSesion(1);
+  const datos = await m.servicio.datosEjercicio(id, banca.id);
+  assert.equal(datos.implementoCarga, 'barra');
+  assert.equal(datos.equipo.barra, 20);
+  assert.deepEqual(datos.calentamiento.map((s) => [s.peso, s.reps]), [[20, 10], [25, 5], [35, 3]]); // trabajo: 50 kg
+  assert.deepEqual((await m.servicio.datosEjercicio(id, inclinado.id)).calentamiento, [], 'el segundo con barra ya no');
+  await hacer(m, id, banca, 10);
+  assert.deepEqual((await m.servicio.datosEjercicio(id, banca.id)).calentamiento, [], 'con series hechas ya no');
+});
+
+test('tanda 3: nota por ejercicio (guardar y borrar) y aviso de estancamiento a las 3 semanas sin subir', async () => {
+  const m = await montaje('2026-09-21T15:00:00Z');
+  const banca = porClave('press-de-banca');
+  const primera = await m.servicio.iniciarSesion(1);
+  assert.deepEqual(await m.servicio.guardarNota(banca.clave, '  molestia en el hombro  '), { texto: 'molestia en el hombro', fecha: '2026-09-21' });
+  assert.equal((await m.servicio.datosEjercicio(primera, banca.id)).nota.texto, 'molestia en el hombro');
+  assert.equal(await m.servicio.guardarNota(banca.clave, ''), null);
+  assert.equal(await m.repos.estado.leer(`nota:${banca.clave}`), undefined, 'la nota vacía se borra');
+
+  // Cuatro lunes con 50 kg × 8: la primera sesión es la base; después, 3 semanas sin subir.
+  await hacer(m, primera, banca, 8);
+  for (const lunes of ['2026-09-28', '2026-10-05', '2026-10-12']) {
+    m.irA(`${lunes}T15:00:00Z`);
+    const id = await m.servicio.iniciarSesion(1);
+    const { estancado } = await m.servicio.datosEjercicio(id, banca.id);
+    if (lunes === '2026-10-12') assert.equal(estancado, null, 'antes de la tercera semana, todavía no');
+    await hacer(m, id, banca, 8);
+  }
+  m.irA('2026-10-19T15:00:00Z');
+  const id = await m.servicio.iniciarSesion(1);
+  assert.deepEqual((await m.servicio.datosEjercicio(id, banca.id)).estancado, { semanas: 3, sesiones: 3, desde: '2026-09-21', estancado: true });
+  const avance = crearServicioAvance({ repos: m.repos, reloj: m.reloj });
+  assert.deepEqual((await avance.resumen()).estancados.map((e) => [e.clave, e.semanas]), [['press-de-banca', 3]]);
+});
+
+test('tanda 3: tu equipo y tus preferencias, guardados en estado', async () => {
+  const repos = crearReposEnMemoria();
+  const ajustes = crearServicioAjustes({ repos });
+  assert.equal((await ajustes.equipo()).maneral, null, 'el peso del mango falta hasta que lo pongas');
+  await ajustes.guardarEquipo({ maneral: 5 });
+  const equipo = await ajustes.equipo();
+  assert.equal(equipo.maneral, 5);
+  assert.equal(equipo.barra, 20, 'lo que no cambiaste se queda');
+  assert.deepEqual(await ajustes.preferencias(), { voz: false }, 'la voz viene apagada');
+  assert.deepEqual(await ajustes.guardarPreferencias({ voz: true }), { voz: true });
 });

@@ -67,6 +67,9 @@ export function crearReposEnMemoria() {
       escribir: async (llave, valor) => {
         tablas.estado.set(llave, copia(valor));
       },
+      borrar: async (llave) => {
+        tablas.estado.delete(llave);
+      },
       escribirVarias: async (pares) => {
         for (const [llave, valor] of pares) tablas.estado.set(llave, copia(valor));
       },

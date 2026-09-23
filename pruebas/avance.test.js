@@ -5,7 +5,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
-  constancia, e1rm, ejercicioPorDefecto, ejerciciosConHistorial, marcasDeAvisos, puntosDeEjercicio, puntosPorClave,
+  constancia, e1rm, ejercicioPorDefecto, ejerciciosConHistorial, estancamiento, marcasDeAvisos, puntosDeEjercicio, puntosPorClave,
   recordNuevo, records, resumenSemana, seriesPorGrupo, ultimasSemanas,
 } from '../docs/js/logica/avance.js';
 
@@ -194,4 +194,23 @@ test('lista de ejercicios, el que se abre primero y dónde van los avisos acepta
   const banca = puntos.get('banca');
   const marcas = marcasDeAvisos(banca, [{ hora: banca[0].fin, peso: 55 }, { hora: '2026-01-01T00:00:00.000Z', peso: 1 }]);
   assert.deepEqual([...marcas.keys()], [0]); // el aviso anterior a todo no tiene sesión
+});
+
+test('estancamiento: 3 semanas sin récord ni aviso aceptado, en la unidad actual', () => {
+  const punto = (semana, peso, e1rmValor, extra = {}) => ({
+    fecha: `f-${semana}`, semanaISO: `2026-W${semana}`, inicio: `2026-09-${semana}T10:00:00.000Z`, unidad: 'kg', peso, e1rm: e1rmValor, valor: 8, ...extra,
+  });
+  const quietos = [punto(35, 50, 66), punto(36, 50, 66), punto(37, 50, 66), punto(38, 50, 66)];
+  assert.deepEqual(estancamiento(quietos), { semanas: 3, sesiones: 3, desde: 'f-35', estancado: true });
+  assert.equal(estancamiento(quietos.slice(0, 3)).estancado, false); // solo 2 semanas
+  const subeReps = [punto(35, 50, 66), punto(36, 50, 66), punto(37, 50, 68), punto(38, 50, 68)];
+  assert.deepEqual(estancamiento(subeReps), { semanas: 1, sesiones: 1, desde: 'f-37', estancado: false });
+  // Un aviso aceptado en la semana 36 también cuenta como avance.
+  assert.equal(estancamiento(quietos, [{ hora: '2026-09-36T11:00:00.000Z' }]).semanas, 2);
+  // Sin peso cuenta la mejor serie; las sesiones en otra unidad no se mezclan.
+  const plancha = [35, 36, 37, 38].map((s) => punto(s, null, null, { unidad: 'corporal', valor: 40 }));
+  assert.equal(estancamiento(plancha).estancado, true);
+  const cambioUnidad = [punto(30, 90, 120, { unidad: 'lb' }), punto(35, 50, 66), punto(36, 50, 66)];
+  assert.deepEqual(estancamiento(cambioUnidad), { semanas: 1, sesiones: 1, desde: 'f-35', estancado: false });
+  assert.equal(estancamiento([]), null);
 });

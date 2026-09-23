@@ -40,8 +40,14 @@ No necesita cambiar el esquema: todo se calcula de lo que ya se guarda; el perfi
 - **Gráficas:** SVG hecho a mano, sin librerías. Seguir la guía `dataviz`: un solo eje, paleta validada con su script, tooltip al tocar, vista de tabla y leyenda si hay 2 o más series.
 - **Diseño:** lógica pura en `logica/avance.js` y `logica/cuerpo.js`; `servicios/avance.js`; `vistas/avance.js`; `componentes/grafica.js`.
 
-## Tanda 3: herramientas de gimnasio
-Calculadora de discos (configurar discos una vez), calentamiento sugerido, aviso de estancamiento (3 semanas sin subir), notas por ejercicio, voz del teléfono en el descanso.
+## Tanda 3: hecha (en la beta, esperando aprobación)
+Calculadora de discos (con tu equipo), calentamiento sugerido, aviso de estancamiento (3 semanas sin subir),
+notas por ejercicio, voz del teléfono en el descanso. Hecha el 2026-09-23. Decisiones 84 a 95. Pruebas: 133 de 133.
+Tu equipo (2026-09-23): barra olímpica de 20 kg; un par de discos de kg (2 pulgadas) de 2.5, 5, 10, 15 y 20 para barra
+y polea; mancuernas ajustables de 1 pulgada con discos de lb (4 de 15, 6 de 10, 4 de 5), tope 50 lb. No se mezclan.
+Falta: el peso del mango de las mancuernas (sin él no se calculan) y si el carro de la polea pesa algo.
+Pendiente de tu respuesta: la guía de respiración en el descanso (no se hizo).
+Sin verificar en el cel: la voz (sin internet depende del teléfono) y la calculadora con el dedo.
 
 ## Tanda 4: cambiar de rutina con un prompt (sin IA dentro de la app)
 1. Aarón escribe qué quiere.
