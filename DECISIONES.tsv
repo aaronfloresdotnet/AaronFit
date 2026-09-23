@@ -1,0 +1,52 @@
+#	Área	Decisión o suposición	Por qué	Renglones de la rutina	Origen	Cómo se verificó
+1	Repo	Repo público aaronfloresdotnet/AaronFit	Con tu plan, GitHub rechaza Pages en repo privado (HTTP 422)	—	Aarón («Que sea público entonces»)	Respuesta de la API de GitHub
+2	Repo	Antes de publicar, el historial se reescribió para quitar unas medidas corporales de ejemplo del encargo que había usado en una prueba; el repo privado con el historial viejo quedó renombrado como AaronFit-historial-privado	Podían ser tus medidas reales y tus datos nunca salen del cel	—	Mía	git log sin esas cifras
+3	Estructura	La app vive en docs/; pruebas/ y herramientas/ quedan fuera	Pages sirve solo docs/, así las pruebas no se publican (l.506)	—	Mía	Lista del service worker
+4	Estructura	Capa de aplicación (servicios/) entre pantalla y datos, con dependencias inyectadas y un solo punto de conexión (contenedor.js)	La lógica es pura (l.57) y la pantalla no toca IndexedDB: alguien tiene que orquestar	—	Mía	Prueba de arquitectura
+5	Estructura	Prueba que falla si una capa importa lo que no le toca o si la lógica usa DOM, red o reloj	Que la regla de capas no dependa de la memoria de nadie	—	Mía	Falla al romperla a propósito (2 de 2 casos)
+6	Pruebas	Se corren con «node --test» sin argumentos (package.json sin dependencias)	«node --test pruebas/» del encargo falla en Node 24 (MODULE_NOT_FOUND)	—	Mía	Probado en esta máquina
+7	Pruebas	Además de las 5 áreas del encargo, pruebas de la semilla, del parseo, de los casos de uso (con base en memoria) y del service worker	Dos errores reales aparecieron así (aviso aceptado a la misma hora, escrituras de solo lectura)	—	Mía	77 de 77 pasan
+8	Datos	rutina.id estable = diaSemana×100 + orden, no autoincremental	Corregir la semilla con la app corriendo (l.565) sin dejar huérfanas las series	Los 43	Mía	Prueba de la semilla
+9	Datos	VERSION_SEMILLA es la huella del contenido; si cambia, la app actualiza la rutina en el teléfono sin tocar el historial	Que una corrección llegue al cel sin reinstalar ni perder datos	Los 43	Mía	Prueba de la semilla y navegador
+10	Datos	La semilla se genera con un script desde tu hoja (fuente/rutina.tsv), no a mano	Copia exacta; una prueba compara 13 campos de texto de cada renglón con la hoja	Los 43	Mía	Prueba de la semilla: 43 de 43 renglones idénticos
+11	Datos	Campos agregados a la rutina: clave, pesoTexto, pesoNota, descansoTexto	Conservar el texto original junto al número interpretado	Los 43	Mía	—
+12	Datos	Renglones con prescripción idéntica comparten historial (clave); si cambia algo, cada día lleva la suya	Subirle a la eversión un día cuenta para toda la semana; las elevaciones laterales de lunes (15 lb, 3×) y viernes (12 lb, 4×) no se mezclan	101…501, 102…502, 106, 505	Mía	Prueba de la semilla
+13	Datos	Los minutos se guardan como segundos; el control muestra minutos con paso 1	El almacén de series no tiene campo de minutos (l.152-156)	509, 601, 701	Mía	Prueba de precarga
+14	Datos	Por lado: un registro si se captura una vez; dos (izq y der) si se desdobla; para la progresión cuenta el peor lado	El encargo no decía cuál; el peor lado es el conservador	Los 16 «por pie/pierna/brazo»	Mía	Navegador y pruebas
+15	Datos	Sábado y domingo: equipo «Ninguno» (hoja), sin peso y sin cronómetro («-» se toma como 0)	El modelo exige esos campos y la hoja trae guion	601, 701	Mía	—
+16	Datos	«Banda negra 25-65 lb» no es peso: sin control de peso; el texto queda como nota	La banda asiste, no carga	303	Mía	—
+17	Datos	«20 kg + barra» se registra como 20 kg con la nota «+ barra»	Se anota lo que cargas en discos; el peso de la barra no está en la hoja	305	Mía	—
+18	Datos	«Barra sola 20 kg» = 20 kg totales	Así lo dice la hoja	403	Mía	—
+19	Datos	Una sola mancuerna (40 lb, 20 lb) no lleva «c/u»; «por brazo» cuenta como por lado	«c/u» solo donde la hoja dice «cada una»; l.118 solo mencionaba pie y pierna	406, 504	Mía	—
+20	Precarga	Peso de la serie k: lo último completado hoy; si no, el aviso aceptado; si no, la serie k de la vez anterior; si no, la semilla. Valor: tras aviso, repsMin o el tiempo nuevo; si no, la serie k anterior; si no, repsMin	Reconcilia la decisión 4 («cada serie de la vez anterior») con la regla 5.1 («la última serie completada»)	Todos	Mía	Pruebas y navegador (55 kg pasó de la serie 1 a la 2)
+21	Precarga	Entre el aviso aceptado y la última serie manda la más reciente; si tienen la misma hora, el aviso	El encargo no decía cuál manda	Todos	Mía	Prueba (encontró un error y se corrigió)
+22	Progresión	Tras aceptar un peso o implemento nuevo, las reps vuelven a repsMin	Doble progresión: con peso nuevo se empieza abajo del rango	Todos con peso	Mía	Prueba de casos de uso
+23	Progresión	43 reglas estructuradas: 13 manuales, 22 «todas las series», 2 de tiempo, 5 de cambio de implemento y 1 de dos semanas	Modelar el texto de la columna Progresión (l.292-300)	Los 43	Mía	Prueba: cada tipo y cada renglón
+24	Progresión	Curl femoral y abducción: se evalúa la condición (15/15/15 y 20/20/20) y se propone +2.5 kg editable	El encargo los mandaba a «manual» por el disco (l.300), pero su condición sí se puede medir	205, 207	Mía	Prueba de progresión
+25	Progresión	«Sin titubear», «limpias» y «sin soltar» no se pueden medir: se evalúa la parte numérica y el aviso muestra el texto completo para que tú juzgues	Mismo trato que el RIR (l.302)	404, 506, 508	Mía	—
+26	Progresión	Cambio de implemento una sola vez: banda roja; mancuerna(s) de 20 lb (pasa de corporal a lb); piernas rectas; recorrido más largo	Así lo dice cada renglón; después solo queda el texto	303, 208, 404, 407, 408	Mía	Prueba de progresión
+27	Progresión	Sentadilla a banco: «dos semanas seguidas» = dos semanas ISO consecutivas; tras aceptar cualquiera de las dos opciones, la racha vuelve a empezar; el aviso da dos botones y nunca las dos cosas	Nunca las dos a la vez (hoja)	403	Mía	Prueba de progresión
+28	Progresión	Tiempo semanal: al cerrar la última serie propone el menor tiempo logrado + 10 s, sin pasar del tope, una vez por semana; «30-45 s» arranca en 30; «luego pasa a una pierna» queda como texto	El encargo no decía la base	108, 206	Mía	Prueba de progresión
+29	Progresión	Costal: se queda en 3 rondas; «4 rondas en la semana 4» queda como texto, con la semana del programa a la vista	La decisión 9 fija las series y manda sobre la hoja (l.13)	509	Encargo (l.13)	—
+30	Progresión	Semana del programa: la semana 1 es la de tu primera sesión de fuerza	«Semana 3» y «semana 4» necesitan un inicio que el encargo no definía	101…501, 509	Mía	Prueba de casos de uso
+31	Días	Se pregunta por el día perdido más antiguo; recorrerlo corre ese día y los siguientes; lo que no cabe antes del domingo queda como no hecho; antes de decidir, la app dice qué ya no cabría	Regla 5.5 más los casos que no cubría (varios días perdidos)	Lunes a viernes	Encargo + mía	Pruebas y navegador
+32	Días	Terminar a medias marca las series faltantes como saltadas; una sesión sin ninguna serie queda abandonada y el día sigue pendiente	Un inicio por error no debe «gastar» el día	Todos	Mía	Prueba de casos de uso
+33	Pantallas	Cinco vistas (inicio, día, ejercicio, medidas, respaldo), no cuatro	l.372 decía 4 pero el mapa dibuja 5	—	Mía	—
+34	Pantallas	La barra inferior se oculta mientras entrenas	Más espacio para la tarjeta de la serie	—	Mía	Navegador
+35	Pantallas	El RIR opcional solo aparece en ejercicios con RIR objetivo	Sin objetivo no hay contra qué anotarlo	Los 16 con RIR «-»	Mía	—
+36	Pantallas	El video se ve al empezar el ejercicio y se pliega tras la primera serie	Que la tarjeta de captura quepa sin desplazarse	—	Mía	Navegador
+37	Pantallas	Tras la última serie de un ejercicio, la app pasa sola al siguiente pendiente con el descanso corriendo	l.380: «la lista avanza sola al siguiente»	—	Mía	Navegador (lunes completo)
+38	Pantallas	En el aviso de progresión el peso o tiempo nuevo sale en un control editable antes de aceptar	Tus discos pueden no coincidir con la propuesta	—	Mía	Navegador
+39	Cronómetro	Pantalla completa; el timbre se agenda en el reloj de audio para que suene aunque el navegador frene la página; cuenta contra una hora de fin	Que no se atrase ni se calle en segundo plano	—	Mía	Navegador (sin sonido real: suposición)
+40	Medidas	Sin botón de cámara: casilla «Fotos tomadas»	Suposición técnica: desde una PWA, la foto tomada con la cámara del navegador no queda en la galería (decisión 11). No probado en tu teléfono	—	Mía	No verificado
+41	Medidas	Una medición por fecha (guardar la misma fecha corrige); se precargan peso, cintura, cadera y cuello de la anterior; las demás arrancan vacías	Que no se guarde por error un valor viejo en un campo plegado	—	Mía	Navegador y prueba
+42	Pantallas	Solo modo oscuro	l.428 lo pide por omisión y se entrena de noche	—	Mía	—
+43	Respaldo	Archivo aaronfit-respaldo-FECHA.json; la confirmación de importar es una casilla que habilita el botón; el archivo lleva su propia fecha	«No un botón suelto» (l.448)	—	Mía	Navegador: exportar, importar, 5 de 5 colecciones idénticas
+44	Respaldo	Se pide al navegador almacenamiento persistente	Para que Chrome no borre los datos por falta de espacio	—	Mía	—
+45	Videos	28 de 31 páginas están bloqueadas por Cloudflare (MuscleWiki 27, Muscle & Strength 1): no se evadió el bloqueo; esas muestran «Ver el video en el navegador»	Evadir la detección de bots no es aceptable; los términos de MuscleWiki limitan el uso de sus videos	29 renglones con esas ligas	Mía	curl y Chromium: 403
+46	Videos	WorkoutLabs (equilibrio): su GIF sí carga desde github.io pero no se usa	La página prohíbe marcos y su imagen principal rechaza otros sitios; su licencia no la revisé	101…501	Mía	Encabezados y navegador
+47	Videos	YouTube en modo de privacidad mejorada (youtube-nocookie)	No deja cookies hasta que reproduces	102, 202, 302, 402, 502, 404	Mía	Navegador
+48	PWA	start_url y scope relativos («./»): resuelven a la carpeta del sitio en Pages	Evita el error clásico de subruta (l.534)	—	Mía	Sitio publicado
+49	PWA	La lista y la versión de la caché las calcula un script (huella del contenido); una prueba falla si no están al día	El error clásico: actualizar y seguir viendo lo viejo (l.526)	—	Mía	Prueba y navegador sin servidor
+50	PWA	En localhost no se registra el service worker (salvo con ?sw)	Al desarrollar no se sirven archivos viejos	—	Mía	—
+51	PWA	Una versión nueva se aplica al volver a inicio, nunca a media serie	No cortar un descanso ni una captura	—	Mía	—
