@@ -93,6 +93,7 @@ export function crearServicioAvance({ repos, reloj = () => new Date() }) {
       puntos,
       marcas: [...marcasDeAvisos(puntos, propios)].map(([indice, lista]) => ({ indice, avisos: lista })),
       records: recs,
+      sesiones: todos.length,
       recortadas: mismos.length - puntos.length,
     };
   }

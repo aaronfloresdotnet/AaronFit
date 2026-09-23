@@ -277,6 +277,19 @@ test('récord: la primera vez no; con más peso la semana siguiente sí; en empa
   assert.equal((await guardar(2, 60, 8)).record, null, 'corregir nunca avisa');
 });
 
+test('si revisar el récord falla, la serie se guarda igual y el fallo queda anotado', async () => {
+  const m = await montaje('2026-09-21T15:00:00Z');
+  const fallos = [];
+  const reposQueFallan = { ...m.repos, series: { ...m.repos.series, deRutinas: async () => { throw new Error('lectura rota'); } } };
+  const servicio = crearServicioEntrenamiento({ repos: reposQueFallan, reloj: m.reloj, alFallar: (error, donde) => fallos.push([error.message, donde]) });
+  const banca = porClave('press-de-banca');
+  const id = await servicio.iniciarSesion(1);
+  const r = await servicio.guardarSerie({ sesionId: id, rutinaId: banca.id, numeroSerie: 1, peso: 50, unidadPeso: 'kg', valor: 10 });
+  assert.equal(r.record, null);
+  assert.equal((await m.repos.series.deSesion(id)).length, 1, 'la serie quedó guardada');
+  assert.deepEqual(fallos, [['lectura rota', 'récord']]);
+});
+
 test('avance: resumen, constancia, gráfica con la marca del aviso, y la semana pasada solo lunes y martes', async () => {
   const m = await montaje('2026-09-21T15:00:00Z');
   const banca = porClave('press-de-banca');

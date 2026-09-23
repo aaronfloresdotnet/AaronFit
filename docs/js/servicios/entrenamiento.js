@@ -26,7 +26,13 @@ export function avance(ejercicio, seriesSesion) {
   return { hechas, saltadas, total: ejercicio.series, terminado: hechas + saltadas >= ejercicio.series };
 }
 
-export function crearServicioEntrenamiento({ repos, reloj = () => new Date() }) {
+/**
+ * @param {object} p
+ * @param {object} p.repos
+ * @param {() => Date} [p.reloj]
+ * @param {(error:unknown, donde:string) => void} [p.alFallar]  dónde anotar un fallo que no debe detener nada (el récord)
+ */
+export function crearServicioEntrenamiento({ repos, reloj = () => new Date(), alFallar = (error) => console.error(error) }) {
   let rutinaEnMemoria = null;
 
   async function rutina() {
@@ -268,10 +274,15 @@ export function crearServicioEntrenamiento({ repos, reloj = () => new Date() }) 
     const cierre = sesionTerminada && sesion.estado === 'en_curso' ? { ...sesion, estado: 'completa', fin: t.hora } : null;
 
     // ¿Récord? Se revisa ANTES de guardar, contra todo lo anterior de la clave.
-    // Corregir una serie nunca avisa.
-    const record = existentes.length
-      ? null
-      : recordNuevo({ previas: await repos.series.deRutinas(await idsDeClave(ejercicio.clave)), nuevas, tipoMedida: ejercicio.tipoMedida });
+    // Corregir una serie nunca avisa, y si esta revisión falla, la serie se guarda igual.
+    let record = null;
+    if (!existentes.length) {
+      try {
+        record = recordNuevo({ previas: await repos.series.deRutinas(await idsDeClave(ejercicio.clave)), nuevas, tipoMedida: ejercicio.tipoMedida });
+      } catch (error) {
+        alFallar(error, 'récord');
+      }
+    }
 
     await repos.guardarCaptura({ nuevas, borrar, sesion: cierre });
 

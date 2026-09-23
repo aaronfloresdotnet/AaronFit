@@ -11,8 +11,13 @@ Reglas que no cambian:
 ## Tanda 1: hecha (en la beta, esperando aprobación)
 Cronómetro de serie, deshacer, descanso mejorado (anillo, frases ES/EN y de avance, pitidos), registro de errores, atajos del ícono.
 
-## Tanda 2: en curso (todavía sin código)
-No necesita cambiar el esquema: todo se calcula de lo que ya se guarda; el perfil va en `estado`.
+## Tanda 2: hecha (en la beta, esperando aprobación)
+Hecha el 2026-09-23. Decisiones 66 a 83 de `DECISIONES.tsv`. Pruebas: 121 de 121.
+Sin verificar en el cel: tocar la gráfica con el dedo, el aviso de récord durante un entrenamiento real,
+abrir el TSV en Sheets. Revisado en el navegador de escritorio a tamaño de celular, con datos simulados.
+
+No necesita cambiar el esquema: todo se calcula de lo que ya se guarda; el perfil va en `estado`
+(llaves nuevas: `perfil` y `avisosAceptados`).
 
 - **Pantalla nueva «Avance»** (cuarto botón de la barra):
   - Resumen de la semana: días hechos de 5, series, qué subió.
