@@ -19,6 +19,7 @@
   ],
   "shortcuts": [
     { "name": "Entrenar", "url": "./#/", "icons": [{ "src": "iconos/icono-192.png", "sizes": "192x192", "type": "image/png" }] },
+    { "name": "Avance", "url": "./#/avance", "icons": [{ "src": "iconos/icono-192.png", "sizes": "192x192", "type": "image/png" }] },
     { "name": "Medidas", "url": "./#/medidas", "icons": [{ "src": "iconos/icono-192.png", "sizes": "192x192", "type": "image/png" }] },
     { "name": "Respaldo", "url": "./#/respaldo", "icons": [{ "src": "iconos/icono-192.png", "sizes": "192x192", "type": "image/png" }] }
   ]

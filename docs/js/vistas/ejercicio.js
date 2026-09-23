@@ -328,7 +328,7 @@ export async function montar(raiz, [idSesion, idRutina], app) {
   /** '★ ¡Nuevo récord! 57.5 kg' (o 1RM estimado, o la mejor serie sin peso). */
   function textoRecord(r) {
     if (r.tipo === 'peso') return `★ ¡Nuevo récord! ${formato.peso(r.valor, r.unidad, e.pesoPorLado)}`;
-    if (r.tipo === 'e1rm') return `★ ¡Nuevo récord! 1RM estimado ${formato.decimal(r.valor)} ${r.unidad}`;
+    if (r.tipo === 'e1rm') return `★ ¡Nuevo récord! 1RM estimado ${formato.decimal(r.valor)} ${r.unidad}${e.pesoPorLado ? ' c/u' : ''}`;
     return `★ ¡Nuevo récord! ${formato.valor(r.valor, e.tipoMedida)}${e.tipoMedida === 'reps' ? ' reps' : ''}`;
   }
 
