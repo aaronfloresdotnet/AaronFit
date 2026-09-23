@@ -508,6 +508,49 @@ test('tanda 4: la rutina programada se puede reemplazar o quitar antes de que em
   assert.equal((await plan.quitarProgramada()).ok, false);
 });
 
+test('nombres entre rutinas: el prompt los lleva; si la IA cambia uno, la app pregunta y no programa sin respuesta', async () => {
+  const m = await montaje('2026-09-21T15:00:00Z');
+  const banca = porClave('press-de-banca');
+  await hacer(m, await m.servicio.iniciarSesion(1), banca, 10);
+  const plan = crearServicioPlan({ repos: m.repos, reloj: m.reloj, despuesDeCambiar: () => m.servicio.olvidarRutina() });
+
+  const { texto } = await plan.prompt({ conMedidas: false });
+  const seccion = texto.split('## Ejercicios que ya tengo (nombres fijos)\n')[1].split('\n## ')[0];
+  assert.equal(seccion.split('\n').filter((l) => l.startsWith('- ')).length, 34, 'tus 34 nombres');
+  assert.ok(seccion.includes('\n- Press de banca\n') && seccion.includes('\n- Elevación lateral\n'));
+  assert.doesNotMatch(seccion, /De rutinas anteriores/, 'con una sola rutina no hay anteriores');
+
+  // La IA escribe «Press bank»: la app pregunta y no deja programar.
+  const conError = RESPUESTA_IA.replace('Press de banca', 'Press bank');
+  const duda = await plan.revisar(conError);
+  assert.equal(duda.ok, true);
+  assert.equal(duda.pendientes, 1);
+  assert.deepEqual(duda.nombres.filter((n) => n.parecidos.length), [{ nombre: 'Press bank', parecidos: ['Press de banca'], decision: undefined }]);
+  assert.equal(duda.conocidos.length, 34);
+  assert.deepEqual(await plan.programar(conError), { ok: false, errores: ['Falta contestar si un nombre es de un ejercicio que ya tienes.'], avisos: duda.avisos });
+  assert.equal(await m.repos.estado.leer('planes'), undefined, 'no se guardó nada');
+
+  // «No, es otro»: empieza sin historial.
+  const otro = await plan.revisar(conError, { equivalencias: { 'Press bank': null } });
+  assert.equal(otro.pendientes, 0);
+  assert.ok(otro.diferencias.nuevos.includes('Press bank'));
+
+  // «Sí, es Press de banca»: se escribe tu nombre y sigue su historial.
+  const opciones = { equivalencias: { 'Press bank': 'Press de banca' } };
+  const mismo = await plan.revisar(conError, opciones);
+  assert.equal(mismo.pendientes, 0);
+  assert.deepEqual([mismo.renglones[0].ejercicio, mismo.renglones[0].clave], ['Press de banca', 'press-de-banca']);
+  assert.ok(!mismo.diferencias.nuevos.includes('Press bank') && mismo.diferencias.cambian.some((c) => c.ejercicio === 'Press de banca'));
+  assert.equal((await plan.programar(conError, opciones)).ok, true);
+  const guardado = (await m.repos.rutina.todas()).find((r) => r.id === 2101);
+  assert.deepEqual([guardado.ejercicio, guardado.clave], ['Press de banca', 'press-de-banca']);
+
+  // Mayúsculas y acentos no cuentan: se guarda tu nombre como siempre, sin preguntar.
+  const minusculas = await plan.revisar(RESPUESTA_IA.replace('Press de banca', 'press de banca').replace('Face pull con cuerda', 'FACE PULL CON CUERDA'));
+  assert.deepEqual(minusculas.nombres.map((n) => n.nombre), ['Remo con barra', 'Sentadilla con barra']);
+  assert.deepEqual(minusculas.renglones.slice(0, 2).map((r) => r.ejercicio), ['Press de banca', 'Face pull con cuerda']);
+});
+
 test('tanda 3: tu equipo y tus preferencias, guardados en estado', async () => {
   const repos = crearReposEnMemoria();
   const ajustes = crearServicioAjustes({ repos });

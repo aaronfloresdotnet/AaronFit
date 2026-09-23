@@ -117,3 +117,45 @@ test('qué cambia: nuevos, los que salen, los que cambian (con qué) y los igual
   assert.deepEqual(diferencias(RUTINA, RUTINA).cambian, []); // nada cambia contra sí misma
   assert.equal(diferencias(RUTINA, RUTINA).iguales.length, 35);
 });
+
+// Claves heredadas (Aarón, 2026-09-23): tu rutina real como «anterior» y una
+// rutina 2 armada a partir de ella. Sin heredar, los casos 2 a 5 perdían el
+// historial aunque el nombre llegara exacto.
+const comoRutina2 = (renglones) => renglonesDePlan(leerTSV(rutinaATSV(renglones)).filas, { plan: 2, previos: RUTINA }).renglones;
+const clavesDe = (renglones, ejercicio) => renglones.filter((r) => r.ejercicio === ejercicio).map((r) => `${r.dia.split(' - ')[0]} ${r.clave}`);
+const elevacionLunes = RUTINA.find((r) => r.clave === 'elevacion-lateral-lunes');
+
+test('claves heredadas 1: tu misma rutina como rutina 2 conserva las 43 claves', () => {
+  const nuevo = comoRutina2(RUTINA);
+  assert.deepEqual(nuevo.map((r) => r.clave), RUTINA.map((r) => r.clave));
+});
+
+test('claves heredadas 2: la elevación lateral conserva la de cada día, aunque se quede en uno o se iguale', () => {
+  const soloViernes = comoRutina2(RUTINA.filter((r) => r.clave !== 'elevacion-lateral-lunes'));
+  assert.deepEqual(clavesDe(soloViernes, 'Elevación lateral'), ['VIERNES elevacion-lateral-viernes']);
+  const igualada = RUTINA.map((r) => (r.clave === 'elevacion-lateral-viernes' ? { ...elevacionLunes, id: r.id, dia: r.dia, diaSemana: r.diaSemana, orden: r.orden } : r));
+  assert.deepEqual(clavesDe(comoRutina2(igualada), 'Elevación lateral'), ['LUNES elevacion-lateral-lunes', 'VIERNES elevacion-lateral-viernes']);
+  const aMiercoles = RUTINA.map((r) => (r.clave === 'elevacion-lateral-viernes' ? { ...r, id: 399, dia: 'MIÉRCOLES - Jalón', diaSemana: 3, orden: 99 } : r));
+  assert.deepEqual(clavesDe(comoRutina2(aMiercoles), 'Elevación lateral'), ['LUNES elevacion-lateral-lunes', 'MIÉRCOLES elevacion-lateral-miercoles'], 'un día nuevo lleva la suya');
+});
+
+test('claves heredadas 3: un ejercicio con una sola clave la conserva en todos sus días, aunque cambie en uno', () => {
+  const eversion = RUTINA.map((r) => (r.clave === 'eversion-de-tobillo-en-polea' && r.diaSemana === 1 ? { ...r, pesoTexto: '5 kg' } : r));
+  const nuevo = comoRutina2(eversion);
+  assert.deepEqual(new Set(nuevo.filter((r) => r.ejercicio.startsWith('Eversión')).map((r) => r.clave)), new Set(['eversion-de-tobillo-en-polea']));
+  const banca = RUTINA.find((r) => r.clave === 'press-de-banca');
+  const dosDias = comoRutina2([...RUTINA, { ...banca, id: 499, dia: 'JUEVES - Pierna B', diaSemana: 4, orden: 99, pesoTexto: '40 kg', repsTexto: '12' }]);
+  assert.deepEqual(clavesDe(dosDias, 'Press de banca'), ['LUNES press-de-banca', 'JUEVES press-de-banca'], 'un día más, con otra prescripción, comparte historial');
+  const d = diferencias(RUTINA, nuevo, RUTINA);
+  assert.deepEqual(d.cambian, [{ ejercicio: 'Eversión de tobillo en polea', cambios: ['peso: 2.5 kg → 5 kg (lunes)'] }], 'un cambio de un solo día dice cuál');
+});
+
+test('qué vuelve: un ejercicio de una rutina anterior conserva su historial; uno de verdad nuevo, no', () => {
+  const rutina2 = renglonesDePlan(leerTSV(TRES_DIAS).filas, { plan: 2, previos: RUTINA }).renglones;
+  const plancha = RUTINA.find((r) => r.clave === 'plancha');
+  const rutina3 = comoRutina2([...rutina2.map((r) => ({ ...r, plan: undefined })), { ...plancha, id: 598 }]);
+  const d = diferencias(rutina2, rutina3, [...RUTINA, ...rutina2]);
+  assert.deepEqual(d.vuelven, ['Plancha']);
+  assert.deepEqual(d.nuevos, []);
+  assert.deepEqual(diferencias(RUTINA, rutina2, RUTINA).nuevos, ['Remo con barra', 'Sentadilla con barra']);
+});

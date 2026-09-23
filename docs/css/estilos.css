@@ -1720,3 +1720,56 @@ body.entrenando .toast {
   font-size: 0.8rem;
   line-height: 1.35;
 }
+
+/* Nombres que no tienes: los parecidos a uno tuyo esperan tu respuesta. */
+.lista-nombres {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nombre-nuevo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  background: var(--superficie-2);
+}
+
+.nombre-nuevo.pendiente {
+  border-color: var(--aviso);
+  background: var(--aviso-fondo);
+}
+
+.nombre-nuevo small {
+  color: var(--texto-2);
+}
+
+.nombre-nuevo .entrada-select {
+  background: var(--superficie);
+}
+
+.opciones-nombre {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.boton.opcion-nombre {
+  flex: 1 1 auto;
+  min-height: 48px;
+  padding: 0 14px;
+  font-size: 0.95rem;
+  background: var(--superficie);
+}
+
+.boton.opcion-nombre.elegida {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: var(--acento-texto);
+}

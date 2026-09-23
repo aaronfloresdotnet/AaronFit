@@ -7,7 +7,7 @@
 
 // <archivos> — generado por herramientas/versionar-sw.js; no editar a mano.
 const PREFIJO = 'aaronfit-';
-const VERSION = 'aaronfit-37821e6e2661';
+const VERSION = 'aaronfit-a500b3b36ef5';
 const ARCHIVOS = [
   './',
   './css/estilos.css',
@@ -38,6 +38,7 @@ const ARCHIVOS = [
   './js/logica/formato.js',
   './js/logica/frases.js',
   './js/logica/medidas.js',
+  './js/logica/nombres.js',
   './js/logica/parseo.js',
   './js/logica/plan.js',
   './js/logica/progresion.js',
