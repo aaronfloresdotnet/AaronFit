@@ -1,0 +1,14 @@
+# Sistema operativo
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Editores
+.vscode/
+.idea/
+
+# Preferencias locales de Claude Code
+.claude/settings.local.json
+
+# Node (no hay dependencias; por si alguien corre npm install)
+node_modules/

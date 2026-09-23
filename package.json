@@ -1,0 +1,12 @@
+{
+  "name": "aaronfit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PWA personal de entrenamiento de fuerza y medidas corporales. Sin dependencias.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "semilla": "node herramientas/generar-semilla.js",
+    "servidor": "python herramientas/servidor.py 8000"
+  }
+}
