@@ -1,0 +1,50 @@
+# Plan de la v2 (rama `v2`)
+
+Reglas que no cambian:
+- `main` = la app en el cel de Aarón (congelada como `v1.0`). No se toca mientras se desarrolla.
+- Todo lo nuevo va en `v2` y se prueba en **AaronFit Beta** (`bash herramientas/publicar-beta.sh`, solo desde `v2`).
+- La beta comparte dominio con la real: se separa por nombre (base `entrena-beta`, caché `beta-aaronfit-`).
+- Una tanda pasa a `main` solo cuando Aarón la aprueba en la beta. Antes de pasarla: respaldo exportado.
+- Si una tanda cambia el esquema: `MIGRACIONES[2]`, subir `VERSION_BD` y prueba de que un respaldo v1 importa en v2.
+- Cada decisión propia va a `DECISIONES.tsv`.
+
+## Tanda 1: hecha (en la beta, esperando aprobación)
+Cronómetro de serie, deshacer, descanso mejorado (anillo, frases ES/EN y de avance, pitidos), registro de errores, atajos del ícono.
+
+## Tanda 2: en curso (todavía sin código)
+No necesita cambiar el esquema: todo se calcula de lo que ya se guarda; el perfil va en `estado`.
+
+- **Pantalla nueva «Avance»** (cuarto botón de la barra):
+  - Resumen de la semana: días hechos de 5, series, qué subió.
+  - Constancia: calendario de las últimas semanas (hecho, saltado, recorrido, no hecho) y % de cumplimiento.
+  - Récords por ejercicio: peso máximo y 1RM estimado (Epley: peso × (1 + reps/30)). Aviso «¡Nuevo récord!» al guardar una serie.
+  - Gráfica por ejercicio (un selector): peso de trabajo por sesión y 1RM estimado, en el mismo eje. Los ejercicios sin peso grafican reps o segundos. Marcas donde se aceptó un aviso: guardar desde ya `estado.avisosAceptados` (y quitarlo al deshacer).
+  - Series por grupo muscular: esta semana contra la anterior.
+- **Medidas:**
+  - Perfil: estatura y fórmula hombre/mujer, que elige Aarón; no se supone.
+  - % de grasa estimado (Marina de EE. UU., versión en cm):
+    - hombre: 495 / (1.0324 − 0.19077·log10(cintura − cuello) + 0.15456·log10(estatura)) − 450
+    - mujer: 495 / (1.29579 − 0.35004·log10(cintura + cadera − cuello) + 0.22100·log10(estatura)) − 450
+    - Prueba: hombre, 180 cm, cintura 90, cuello 40 da ≈18.4 %.
+  - Relación cintura/estatura.
+  - Gráfica de peso corporal y cintura.
+  - Comparación contra la medición de hace ~4 semanas.
+  - Recordatorio de fotos si pasaron 4 semanas o más.
+- **Respaldo:** exportar el historial en TSV para Sheets (`aaronfit-historial-FECHA.tsv`, una fila por serie).
+- **Inicio:** aviso si pasaron más de 7 días sin respaldo; resumen de la semana pasada el lunes y martes.
+- **Gráficas:** SVG hecho a mano, sin librerías. Seguir la guía `dataviz`: un solo eje, paleta validada con su script, tooltip al tocar, vista de tabla y leyenda si hay 2 o más series.
+- **Diseño:** lógica pura en `logica/avance.js` y `logica/cuerpo.js`; `servicios/avance.js`; `vistas/avance.js`; `componentes/grafica.js`.
+
+## Tanda 3: herramientas de gimnasio
+Calculadora de discos (configurar discos una vez), calentamiento sugerido, aviso de estancamiento (3 semanas sin subir), notas por ejercicio, voz del teléfono en el descanso.
+
+## Tanda 4: cambiar de rutina con un prompt (sin IA dentro de la app)
+1. Aarón escribe qué quiere.
+2. La app arma el prompt con: objetivo, equipo, rutina actual en TSV, avance, medidas y notas.
+3. El prompt fija el formato de salida: las 13 columnas de la hoja, una columna de regla con mini-sintaxis, y ligas solo de una lista o «SIN LIGA».
+4. Aarón pega la respuesta y la app la valida con `parseo.js`, muestra qué cambia y la programa desde el lunes.
+5. El historial se conserva por nombre de ejercicio.
+6. Hay que generalizar `dias.js` para planes de 3 o 4 días.
+
+## Otras ideas aprobadas, sin tanda asignada
+Compartir respaldo, notificación de fin de descanso con pantalla apagada (no garantizada en Android), pruebas en Android emulado.
