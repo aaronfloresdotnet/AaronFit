@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { RUTINA, VERSION_SEMILLA } from '../docs/js/datos/semilla.js';
+import { reglaATexto } from '../docs/js/logica/parseo.js';
 
 const hoja = readFileSync(new URL('../fuente/rutina.tsv', import.meta.url), 'utf8')
   .split(/\r?\n/)
@@ -43,6 +44,7 @@ test('los textos son idénticos a la hoja, renglón por renglón', () => {
     assert.equal(r.descansoTexto, c[10]);
     assert.equal(r.progresionTexto, c[11]);
     assert.equal(r.liga, c[12] === 'SIN LIGA' ? null : c[12]);
+    assert.equal(reglaATexto(r.progresionRegla), c[13]); // tanda 4: la regla va en la hoja
   });
 });
 
