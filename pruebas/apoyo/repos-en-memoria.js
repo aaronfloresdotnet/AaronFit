@@ -49,6 +49,11 @@ export function crearReposEnMemoria() {
       if (sesion) poner('sesiones', sesion);
       return ids;
     },
+    deshacerCaptura: async ({ borrarSeries, sesion, borrarEstado = [] }) => {
+      tablas.series = tablas.series.filter((s) => !borrarSeries.includes(s.id));
+      if (sesion) poner('sesiones', sesion);
+      for (const llave of borrarEstado) tablas.estado.delete(llave);
+    },
     medidas: {
       todas: async () => copia(tablas.medidas),
       porFecha: async (fecha) => donde('medidas', (m) => m.fecha === fecha),

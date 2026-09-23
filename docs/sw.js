@@ -7,7 +7,7 @@
 
 // <archivos> — generado por herramientas/versionar-sw.js; no editar a mano.
 const PREFIJO = 'aaronfit-';
-const VERSION = 'aaronfit-227f090dfaa6';
+const VERSION = 'aaronfit-3832f90433b4';
 const ARCHIVOS = [
   './',
   './css/estilos.css',
@@ -21,6 +21,7 @@ const ARCHIVOS = [
   './js/componentes/dialogo.js',
   './js/componentes/dom.js',
   './js/componentes/spinner.js',
+  './js/componentes/temporizador-serie.js',
   './js/componentes/video.js',
   './js/config.js',
   './js/datos/db.js',
@@ -30,15 +31,18 @@ const ARCHIVOS = [
   './js/datos/videos.json',
   './js/logica/dias.js',
   './js/logica/formato.js',
+  './js/logica/frases.js',
   './js/logica/medidas.js',
   './js/logica/parseo.js',
   './js/logica/progresion.js',
   './js/logica/referencia.js',
   './js/logica/respaldo.js',
   './js/logica/semana.js',
+  './js/logica/temporizador.js',
   './js/plataforma/actualizacion.js',
   './js/plataforma/almacenamiento.js',
   './js/plataforma/archivos.js',
+  './js/plataforma/errores.js',
   './js/plataforma/pantalla.js',
   './js/plataforma/sonido.js',
   './js/servicios/arranque.js',

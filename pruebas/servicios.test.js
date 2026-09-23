@@ -98,6 +98,60 @@ test('al volver a inicio con el entrenamiento de hoy empezado, se ofrece continu
   assert.equal(await m.servicio.iniciarSesion(1), id, 'continuar reusa la misma sesión');
 });
 
+test('deshacer: quita la última serie y el aviso aceptado después; la precarga vuelve a 50', async () => {
+  const m = await montaje('2026-09-21T15:00:00Z');
+  const banca = porClave('press-de-banca');
+  const id = await m.servicio.iniciarSesion(1);
+  const aviso = (await hacer(m, id, banca, 10)).at(-1).progresion;
+  await m.servicio.aceptarProgresion({ sesionId: id, rutinaId: banca.id, propuesta: aviso });
+  assert.equal((await m.repos.estado.leer('referencia:press-de-banca')).peso, 55);
+
+  const deshecha = await m.servicio.deshacerUltimaSerie(id);
+  assert.equal(deshecha.rutinaId, banca.id);
+  assert.equal(deshecha.numeroSerie, 3);
+  assert.deepEqual(deshecha.borrador, { peso: 50, unidadPeso: 'kg', rir: null, valor: 10, lados: null });
+  assert.equal(await m.repos.estado.leer('referencia:press-de-banca'), undefined);
+  assert.equal((await m.repos.series.deSesion(id)).length, 2);
+
+  m.irA('2026-09-28T15:00:00Z');
+  const siguiente = await m.servicio.iniciarSesion(1);
+  const { precarga } = await m.servicio.datosEjercicio(siguiente, banca.id);
+  assert.deepEqual(precarga.map((p) => p.peso), [50, 50, 50]);
+});
+
+test('deshacer: reabre la sesión que la última serie había cerrado, y borra los dos lados', async () => {
+  const m = await montaje('2026-09-27T16:00:00Z'); // domingo: caminata, 1 serie
+  const id = await m.servicio.iniciarSesion(7);
+  await hacer(m, id, delDia(7)[0]);
+  assert.equal((await m.repos.sesiones.obtener(id)).estado, 'completa');
+  await m.servicio.deshacerUltimaSerie(id);
+  const sesion = await m.repos.sesiones.obtener(id);
+  assert.equal(sesion.estado, 'en_curso');
+  assert.equal(sesion.fin, null);
+
+  const lunes = await montaje('2026-09-21T15:00:00Z');
+  const sesionLunes = await lunes.servicio.iniciarSesion(1);
+  await lunes.servicio.guardarSerie({ sesionId: sesionLunes, rutinaId: 101, numeroSerie: 1, peso: null, unidadPeso: 'corporal', lados: { izq: 30, der: 25 } });
+  const deshecha = await lunes.servicio.deshacerUltimaSerie(sesionLunes);
+  assert.deepEqual(deshecha.borrador.lados, { izq: 30, der: 25 });
+  assert.equal((await lunes.repos.series.deSesion(sesionLunes)).length, 0);
+});
+
+test('frases del descanso: incluyen tu avance cuando el peso subió', async () => {
+  const m = await montaje('2026-09-21T15:00:00Z');
+  const banca = porClave('press-de-banca');
+  const semana1 = await m.servicio.iniciarSesion(1);
+  await hacer(m, semana1, banca, 10);
+  m.irA('2026-09-28T15:00:00Z');
+  const semana2 = await m.servicio.iniciarSesion(1);
+  for (let k = 1; k <= 3; k++) {
+    m.avanzar();
+    await m.servicio.guardarSerie({ sesionId: semana2, rutinaId: banca.id, numeroSerie: k, peso: 55, unidadPeso: 'kg', valor: 8 });
+  }
+  const frases = await m.servicio.frasesDescanso(() => 0.5);
+  assert.equal(frases[0], 'Press de banca: hace 1 semana 50 kg. Hoy 55 kg.');
+});
+
 test('corregir una serie la sobreescribe: mismo registro, sin aviso repetido', async () => {
   const m = await montaje('2026-09-21T15:00:00Z');
   const banca = porClave('press-de-banca');
