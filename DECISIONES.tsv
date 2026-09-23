@@ -50,3 +50,4 @@
 49	PWA	La lista y la versión de la caché las calcula un script (huella del contenido); una prueba falla si no están al día	El error clásico: actualizar y seguir viendo lo viejo (l.526)	—	Mía	Prueba y navegador sin servidor
 50	PWA	En localhost no se registra el service worker (salvo con ?sw)	Al desarrollar no se sirven archivos viejos	—	Mía	—
 51	PWA	Una versión nueva se aplica al volver a inicio, nunca a media serie	No cortar un descanso ni una captura	—	Mía	—
+52	Repo	Issues y wiki apagados en el repo público	Que extraños no abran reportes ni editen páginas; propuestas de cambio (pull requests) siguen posibles pero no cambian nada sin tu aprobación	—	Aarón («sí, apaga los issues y la wiki»)	Configuración del repo: issues false, wiki false
