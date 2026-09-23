@@ -47,6 +47,8 @@ test('leer lo que devuelve la IA: bloque ```tsv, texto alrededor y saltos de Win
   assert.match(corta.errores[0], /Renglón 2: tiene 3 columnas/);
 });
 
+// Sin `previos` (como si no hubiera rutinas anteriores): la elevación lateral lleva la clave
+// simple. Con tu rutina como anterior hereda la del viernes (ver «claves heredadas 2»).
 test('un plan nuevo: ids propios, número de plan, claves por nombre y ligas desconocidas sin video', () => {
   const { renglones, errores, avisos } = renglonesDePlan(leerTSV(TRES_DIAS).filas, { plan: 2, ligasValidas: new Set(['https://musclewiki.com/exercise/barbell-bench-press']) });
   assert.deepEqual(errores, []);
