@@ -45,8 +45,8 @@ Calculadora de discos (con tu equipo), calentamiento sugerido, aviso de estancam
 notas por ejercicio, voz del teléfono en el descanso. Hecha el 2026-09-23. Decisiones 84 a 95. Pruebas: 133 de 133.
 Tu equipo (2026-09-23): barra olímpica de 20 kg; un par de discos de kg (2 pulgadas) de 2.5, 5, 10, 15 y 20 para barra
 y polea; mancuernas ajustables de 1 pulgada con discos de lb (4 de 15, 6 de 10, 4 de 5), tope 50 lb. No se mezclan.
-Falta: el peso del mango de las mancuernas (sin él no se calculan) y si el carro de la polea pesa algo.
-Pendiente de tu respuesta: la guía de respiración en el descanso (no se hizo).
+Resuelto después (ver «Después de la tanda 4»): el mango y el carro de la polea no cuentan (0), y la guía de
+respiración se hizo.
 Sin verificar en el cel: la voz (sin internet depende del teléfono) y la calculadora con el dedo.
 
 ## Tanda 4: hecha (en la beta, esperando aprobación)
