@@ -79,8 +79,17 @@ No cubre: sinónimos o traducciones («Bench press») no se detectan solos: se u
 
 ## Otras ideas aprobadas, sin tanda asignada
 Compartir respaldo, notificación de fin de descanso con pantalla apagada (no garantizada en Android), pruebas en Android emulado.
-Aarón escribió «ya haz el resto de las tandas» (2026-09-23): las 4 tandas ya estaban hechas; le pregunté si
-«el resto» incluye estas ideas. Mientras no conteste, no se tocan.
+Aarón escribió «ya haz el resto de las tandas» (2026-09-23): las 4 tandas ya estaban hechas; le pregunté dos veces
+si «el resto» incluye estas ideas, sin respuesta todavía. Mientras no conteste, no se tocan.
+
+## Pendiente de decisión de Aarón (2026-09-23)
+- Reglas de mancuerna: 9 de 9 suben «+5 lb», pero con sus discos (el más chico de 5 lb, igual en los dos extremos)
+  cada mancuerna sube de 10 en 10; el aviso puede proponer un peso que no sale (curl martillo 30 → 35: «30 o 40»).
+  Además, 11 de 28 pesos de su hoja no salen exactos (eversión 2.5 kg ×5, face pull y tríceps 12 kg, 4 de mancuerna).
+  Opciones que le di: (a) él lo corrige en la próxima rutina (+10 lb, pesos que salen); (b) la app redondea el aviso
+  al siguiente peso que sale, el prompt dice de cuánto en cuánto sube cada implemento y la revisión avisa si una regla
+  no se puede armar (decisión mía: no hacerla sin su OK).
+- Probar la beta en su cel (lo no verificado está en cada tanda) y aprobar para pasar a main (antes, respaldo).
 
 ## Para pasar las tandas a la app real (main)
 Solo cuando Aarón las apruebe en la beta. Antes: exportar respaldo en la app real. Luego fusionar v2 en main,
