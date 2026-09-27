@@ -1,7 +1,7 @@
 # Plan de la v2 (rama `v2`)
 
 Reglas que no cambian:
-- `main` = la app en el cel de Aarón (`v2.0` desde el 2026-09-27; antes `v1.0`). No se toca mientras se desarrolla.
+- `main` = la app en el cel de Aarón (`v2.1` desde el 2026-09-27; antes `v2.0` y `v1.0`). No se toca mientras se desarrolla.
 - Todo lo nuevo va en `v2` y se prueba en **AaronFit Beta** (`bash herramientas/publicar-beta.sh`, solo desde `v2`).
 - La beta comparte dominio con la real: se separa por nombre (base `entrena-beta`, caché `beta-aaronfit-`).
 - Una tanda pasa a `main` solo cuando Aarón la aprueba en la beta. Antes de pasarla: respaldo exportado.
@@ -83,8 +83,11 @@ Sin verificar en el cel: la guía con el teléfono en la mano, «Respira despaci
 real de una IA con nombres cambiados (se probó con respuestas escritas a mano).
 No cubre: sinónimos o traducciones («Bench press») no se detectan solos: se unen a mano en la revisión.
 
-## Después de la v2.0: hecho (en la beta, esperando aprobación)
+## Después de la v2.0: en la app real (v2.1)
 Aarón eligió estas dos ideas (2026-09-27) y aprobó el diseño que le propuse. Decisiones 123 y 125 a 128. Pruebas: 161 de 161.
+Pasaron a la app real ese mismo día («si está el botón de compartir, ya no necesito dos versiones, fusiona»; eligió
+«La beta en tu app real» y, de respaldo, «El de hoy me basta»): `main` = `e5c1850`, etiqueta `v2.1`, producción
+`aaronfit-8fb94172781c`. Decisión 129.
 - **Compartir respaldo:** botón junto a Exportar, solo si el teléfono puede compartir archivos. Va como `.txt`: Chrome en
   Android no deja compartir `.json`. Importar acepta `.txt`. La fecha del respaldo se anota solo si no cierras el menú.
 - **Aviso con la pantalla apagada:** interruptor en Tu equipo › En el descanso, apagado de inicio (pide permiso de
