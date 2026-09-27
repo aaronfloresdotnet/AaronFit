@@ -75,8 +75,10 @@ export async function montar(raiz, _parametros, app) {
     permiso === 'no-soportado'
       ? h('p', { class: 'nota aviso' }, 'Este navegador no puede mostrar notificaciones: aquí el aviso con la pantalla apagada no funciona.')
       : permiso === 'denied'
-        ? h('p', { class: 'nota aviso' }, 'Chrome tiene bloqueadas las notificaciones de este sitio. Para el aviso, permítelas en los ajustes del sitio.')
-        : null;
+        ? h('p', { class: 'nota aviso' }, 'Las notificaciones están bloqueadas. Para el aviso, permítelas en los ajustes del sitio en Chrome o en los de notificaciones de la app en Android.')
+        : permiso === 'default' && app.preferencias.avisoPantallaApagada
+          ? h('p', { class: 'nota aviso' }, 'El aviso está encendido pero falta el permiso de notificaciones: apágalo y vuelve a encenderlo para pedirlo.')
+          : null;
 
   pintar(
     raiz,

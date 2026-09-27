@@ -8,7 +8,7 @@
 
 // <archivos> — generado por herramientas/versionar-sw.js; no editar a mano.
 const PREFIJO = 'aaronfit-';
-const VERSION = 'aaronfit-a601674be4c1';
+const VERSION = 'aaronfit-8fb94172781c';
 const ARCHIVOS = [
   './',
   './css/estilos.css',
@@ -127,7 +127,8 @@ function cancelarAviso() {
 
 async function mostrarAviso({ titulo, cuerpo }) {
   const ventanas = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-  if (ventanas.some((v) => v.visibilityState === 'visible' && v.focused)) return;
+  // Basta con que se vea: `focused` no es confiable en Android y daría aviso y timbre juntos.
+  if (ventanas.some((v) => v.visibilityState === 'visible')) return;
   await self.registration.showNotification(titulo, {
     body: cuerpo,
     tag: ETIQUETA_AVISO,

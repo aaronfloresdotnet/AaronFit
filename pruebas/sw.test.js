@@ -73,10 +73,12 @@ test('aviso: con la pantalla apagada sale al terminar el descanso, con la siguie
   assert.equal(sw.mostradas[0].etiqueta, 'fin-descanso');
 });
 
-test('aviso: si estás viendo la app no sale (ya suena el timbre)', async () => {
-  const sw = cargarSW({ ventanas: [{ visibilityState: 'visible', focused: true }] });
-  await sw.enviar(programar(20));
-  assert.equal(sw.mostradas.length, 0);
+test('aviso: si la app se ve en pantalla no sale (ya suena el timbre), aunque diga que no tiene el foco', async () => {
+  for (const focused of [true, false]) {
+    const sw = cargarSW({ ventanas: [{ visibilityState: 'visible', focused }] });
+    await sw.enviar(programar(20));
+    assert.equal(sw.mostradas.length, 0, `focused: ${focused}`);
+  }
 });
 
 test('aviso: saltar o deshacer lo cancela; un descanso nuevo reemplaza al anterior; callarlo quita el que salió', async () => {
