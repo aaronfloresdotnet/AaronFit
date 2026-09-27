@@ -1,17 +1,23 @@
 # Plan de la v2 (rama `v2`)
 
 Reglas que no cambian:
-- `main` = la app en el cel de Aarón (congelada como `v1.0`). No se toca mientras se desarrolla.
+- `main` = la app en el cel de Aarón (`v2.0` desde el 2026-09-27; antes `v1.0`). No se toca mientras se desarrolla.
 - Todo lo nuevo va en `v2` y se prueba en **AaronFit Beta** (`bash herramientas/publicar-beta.sh`, solo desde `v2`).
 - La beta comparte dominio con la real: se separa por nombre (base `entrena-beta`, caché `beta-aaronfit-`).
 - Una tanda pasa a `main` solo cuando Aarón la aprueba en la beta. Antes de pasarla: respaldo exportado.
 - Si una tanda cambia el esquema: `MIGRACIONES[2]`, subir `VERSION_BD` y prueba de que un respaldo v1 importa en v2.
 - Cada decisión propia va a `DECISIONES.tsv`.
 
-## Tanda 1: hecha (en la beta, esperando aprobación)
+## v2.0 en la app real (2026-09-27)
+Aarón la aprobó: «Sí, ya tengo respaldo» (exportó el respaldo de la app real antes). `main` avanzó hasta `v2` sin fusión y se
+confirmó el sello nuevo de `sw.js` (`125766b`, etiqueta `v2.0`). Decisiones 121 y 122. Producción: `aaronfit-65e8276c7674`.
+Verificado: datos creados con la v1.0 abiertos con la v2 (copia aparte, 8 de 8 pantallas sin errores), 157 de 157 pruebas y
+curl a producción. Sin verificar: que su cel se actualice y abra con sus datos (lo confirma él).
+
+## Tanda 1: en la app real (v2.0)
 Cronómetro de serie, deshacer, descanso mejorado (anillo, frases ES/EN y de avance, pitidos), registro de errores, atajos del ícono.
 
-## Tanda 2: hecha (en la beta, esperando aprobación)
+## Tanda 2: en la app real (v2.0)
 Hecha el 2026-09-23. Decisiones 66 a 83 de `DECISIONES.tsv`. Pruebas: 121 de 121.
 Sin verificar en el cel: tocar la gráfica con el dedo, el aviso de récord durante un entrenamiento real,
 abrir el TSV en Sheets. Revisado en el navegador de escritorio a tamaño de celular, con datos simulados.
@@ -40,7 +46,7 @@ No necesita cambiar el esquema: todo se calcula de lo que ya se guarda; el perfi
 - **Gráficas:** SVG hecho a mano, sin librerías. Seguir la guía `dataviz`: un solo eje, paleta validada con su script, tooltip al tocar, vista de tabla y leyenda si hay 2 o más series.
 - **Diseño:** lógica pura en `logica/avance.js` y `logica/cuerpo.js`; `servicios/avance.js`; `vistas/avance.js`; `componentes/grafica.js`.
 
-## Tanda 3: hecha (en la beta, esperando aprobación)
+## Tanda 3: en la app real (v2.0)
 Calculadora de discos (con tu equipo), calentamiento sugerido, aviso de estancamiento (3 semanas sin subir),
 notas por ejercicio, voz del teléfono en el descanso. Hecha el 2026-09-23. Decisiones 84 a 95. Pruebas: 133 de 133.
 Tu equipo (2026-09-23): barra olímpica de 20 kg; un par de discos de kg (2 pulgadas) de 2.5, 5, 10, 15 y 20 para barra
@@ -49,7 +55,7 @@ Resuelto después (ver «Después de la tanda 4»): el mango y el carro de la po
 respiración se hizo.
 Sin verificar en el cel: la voz (sin internet depende del teléfono) y la calculadora con el dedo.
 
-## Tanda 4: hecha (en la beta, esperando aprobación)
+## Tanda 4: en la app real (v2.0)
 Hecha el 2026-09-23. Decisiones 96 a 108. Pruebas: 146 de 146. Se llega desde Respaldo › Ajustes › Cambiar de rutina.
 La regla de progresión ahora vive en la hoja (columna 14 «Regla»); la semilla no cambió (2485aa8e004a).
 Varias rutinas en el tiempo (campo `plan`, ids N×1000+…, `estado.planes`); respaldo versión 2 solo si hay más de una.
@@ -64,7 +70,7 @@ Lo que se pidió:
 5. El historial se conserva por nombre de ejercicio.
 6. Hay que generalizar `dias.js` para planes de 3 o 4 días.
 
-## Después de la tanda 4: hecho (en la beta, esperando aprobación)
+## Después de la tanda 4: en la app real (v2.0)
 Respuestas y pedidos de Aarón del 2026-09-23. Decisiones 109 a 120. Pruebas: 157 de 157.
 - Equipo: el mango de aluminio y el carro de la polea no cuentan (0); la polea se carga igual de cada lado
   (sube de 5 en 5 kg). En tu hoja salen exactos 17 de 28 pesos con calculadora: barra 6 de 6, polea 5 de 12,
@@ -77,10 +83,9 @@ Sin verificar en el cel: la guía con el teléfono en la mano, «Respira despaci
 real de una IA con nombres cambiados (se probó con respuestas escritas a mano).
 No cubre: sinónimos o traducciones («Bench press») no se detectan solos: se unen a mano en la revisión.
 
-## Otras ideas aprobadas, sin tanda asignada
-Compartir respaldo, notificación de fin de descanso con pantalla apagada (no garantizada en Android), pruebas en Android emulado.
-Aarón escribió «ya haz el resto de las tandas» (2026-09-23): las 4 tandas ya estaban hechas; le pregunté dos veces
-si «el resto» incluye estas ideas, sin respuesta todavía. Mientras no conteste, no se tocan.
+## Ideas aprobadas sin tanda
+Aarón eligió (2026-09-27), para la beta: **compartir respaldo** y **aviso de fin de descanso con la pantalla apagada**
+(no garantizado en Android). **Pruebas en Android emulado:** no la eligió. Decisión 123.
 
 ## Pendiente de decisión de Aarón (2026-09-23)
 - Reglas de mancuerna: 9 de 9 suben «+5 lb», pero con sus discos (el más chico de 5 lb, igual en los dos extremos)
@@ -89,7 +94,8 @@ si «el resto» incluye estas ideas, sin respuesta todavía. Mientras no contest
   Opciones que le di: (a) él lo corrige en la próxima rutina (+10 lb, pesos que salen); (b) la app redondea el aviso
   al siguiente peso que sale, el prompt dice de cuánto en cuánto sube cada implemento y la revisión avisa si una regla
   no se puede armar (decisión mía: no hacerla sin su OK).
-- Probar la beta en su cel (lo no verificado está en cada tanda) y aprobar para pasar a main (antes, respaldo).
+  **Aarón (2026-09-27): «Luego lo decido».** La app no cambia (decisión 124).
+- ~~Probar la beta en su cel y aprobar para pasar a main~~: la aprobó el 2026-09-27 (ver «v2.0 en la app real»).
 
 ## Para pasar las tandas a la app real (main)
 Solo cuando Aarón las apruebe en la beta. Antes: exportar respaldo en la app real. Luego fusionar v2 en main,
