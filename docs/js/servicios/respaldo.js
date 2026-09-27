@@ -2,6 +2,7 @@
 // Importar valida SIEMPRE antes de tocar la base, y reemplaza todo en una sola
 // transacción: si algo falla, la base queda como estaba.
 // Tanda 2: el historial en TSV para Sheets y cuándo recordar el respaldo.
+// 2026-09-27: el respaldo para compartir (va como .txt).
 
 import { armarRespaldo, historialTSV, nombreArchivo, nombreHistorial, recordatorioRespaldo, validarRespaldo } from '../logica/respaldo.js';
 import { aTexto, fechaLocal } from '../logica/semana.js';
@@ -19,6 +20,29 @@ export function crearServicioRespaldo({ repos, reloj = () => new Date(), despues
       conteos: respaldo.conteos,
     };
   }
+
+  /**
+   * El mismo respaldo, para compartirlo por WhatsApp, Drive o correo (2026-09-27).
+   * No anota la fecha: la pantalla llama a `anotar` solo si no cerraste el menú
+   * de compartir. El archivo sí la lleva adentro, como al exportar.
+   */
+  async function paraCompartir() {
+    const instante = reloj().toISOString();
+    const datos = await repos.leerTodo();
+    const estado = datos.estado.some((e) => e.llave === 'ultimoRespaldo')
+      ? datos.estado.map((e) => (e.llave === 'ultimoRespaldo' ? { ...e, valor: instante } : e))
+      : [...datos.estado, { llave: 'ultimoRespaldo', valor: instante }];
+    const respaldo = armarRespaldo({ ...datos, estado }, { exportado: instante });
+    return {
+      nombre: nombreArchivo(aTexto(fechaLocal(new Date(instante))), 'txt'),
+      texto: JSON.stringify(respaldo),
+      conteos: respaldo.conteos,
+      instante,
+    };
+  }
+
+  /** Anota el respaldo compartido: desde ahí cuenta para el recordatorio. */
+  const anotar = (instante) => repos.estado.escribir('ultimoRespaldo', instante);
 
   /** Revisa un archivo sin tocar nada: qué trae y cuánto hay ahora. */
   async function revisar(texto) {
@@ -55,5 +79,5 @@ export function crearServicioRespaldo({ repos, reloj = () => new Date(), despues
     return { fecha, cuentas, ...recordatorioRespaldo({ ultimo: fecha, hoy: aTexto(fechaLocal(reloj())), hayDatos }) };
   }
 
-  return { exportar, revisar, importar, ultimo, exportarHistorial, situacion };
+  return { exportar, paraCompartir, anotar, revisar, importar, ultimo, exportarHistorial, situacion };
 }

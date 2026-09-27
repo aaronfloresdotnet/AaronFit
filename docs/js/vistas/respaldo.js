@@ -1,6 +1,8 @@
 // Pantalla: Respaldo (encargo 6.7 y sección 7). Exportar todo a un archivo.
 // Importar REEMPLAZA todo: primero se revisa el archivo, luego se advierte con
 // los conteos y se pide una confirmación que no se pica de pasada.
+// Compartir (2026-09-27): el mismo respaldo con el menú de compartir del
+// teléfono; solo aparece si el teléfono puede compartir archivos.
 
 import { h, pintar } from '../componentes/dom.js';
 import { fechaCorta } from '../logica/formato.js';
@@ -19,6 +21,7 @@ const NOMBRES = {
 export async function montar(raiz, _parametros, app) {
   const [situacion, persistente] = await Promise.all([app.servicios.respaldo.situacion(), app.almacenamiento.estaPersistido()]);
   const actuales = situacion.cuentas;
+  const puedeCompartir = app.archivos.puedeCompartir();
   let texto = null;
   let revision = null;
   let resultado = null;
@@ -66,6 +69,12 @@ export async function montar(raiz, _parametros, app) {
             : 'El navegador todavía no tiene estos datos como persistentes (suele cambiar al instalar la app).',
         ),
         h('button', { type: 'button', class: 'boton primario enorme', onclick: exportar }, 'Exportar respaldo'),
+        puedeCompartir
+          ? [
+              h('button', { type: 'button', class: 'boton ancho', onclick: compartirRespaldo }, 'Compartir respaldo'),
+              h('p', { class: 'nota' }, 'Lo manda por WhatsApp, Drive o correo como .txt (Chrome no deja compartir .json). Para importarlo, elige ese mismo archivo.'),
+            ]
+          : null,
       ),
       h(
         'section',
@@ -142,6 +151,20 @@ export async function montar(raiz, _parametros, app) {
     }
   }
 
+  async function compartirRespaldo() {
+    try {
+      const { nombre, texto: contenido, instante } = await app.servicios.respaldo.paraCompartir();
+      // Si cerraste el menú sin mandarlo, no cuenta como respaldo.
+      if (!(await app.archivos.compartir(nombre, contenido))) return;
+      await app.servicios.respaldo.anotar(instante);
+      app.aviso(`Compartido: ${nombre}`, 4000);
+      app.refrescar();
+    } catch (error) {
+      if (error?.name === 'NotAllowedError') app.aviso('El teléfono no dejó abrir el menú de compartir. Vuelve a tocar el botón.', 5000);
+      else app.error(error);
+    }
+  }
+
   async function exportarHistorial() {
     try {
       const { nombre, texto: contenido, renglones } = await app.servicios.respaldo.exportarHistorial();
@@ -153,7 +176,8 @@ export async function montar(raiz, _parametros, app) {
   }
 
   function selector() {
-    const entrada = h('input', { type: 'file', accept: '.json,application/json', class: 'oculto', onchange: elegir });
+    // .txt también: así se llama el respaldo que se comparte. Se valida por el contenido.
+    const entrada = h('input', { type: 'file', accept: '.json,.txt,application/json,text/plain', class: 'oculto', onchange: elegir });
     return h('label', { class: 'boton ancho' }, entrada, 'Elegir archivo de respaldo…');
   }
 

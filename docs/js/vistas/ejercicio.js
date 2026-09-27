@@ -430,6 +430,7 @@ export async function montar(raiz, [idSesion, idRutina], app) {
         frases,
         deshacer: deshacerUltima,
         respiracion: app.preferencias.respiracion,
+        avisoFuera: app.preferencias.avisoPantallaApagada,
       });
       app.ir(destino ? `#/ejercicio/${sesionId}/${destino.id}` : `#/dia/${sesionId}`, { reemplazar: true });
       avisar();
@@ -445,6 +446,7 @@ export async function montar(raiz, [idSesion, idRutina], app) {
       frases,
       deshacer: deshacerUltima,
       respiracion: app.preferencias.respiracion,
+      avisoFuera: app.preferencias.avisoPantallaApagada,
     });
     avisar();
     if (!sinDescanso) decir(`Sigue: serie ${siguienteSerie}, ${formato.serieHablada(precarga, e.tipoMedida)}.`);

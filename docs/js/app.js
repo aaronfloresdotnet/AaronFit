@@ -11,6 +11,7 @@ import { registrarServiceWorker } from './plataforma/actualizacion.js';
 import * as almacenamiento from './plataforma/almacenamiento.js';
 import * as archivos from './plataforma/archivos.js';
 import * as errores from './plataforma/errores.js';
+import { crearNotificaciones } from './plataforma/notificaciones.js';
 import { crearPantallaDespierta } from './plataforma/pantalla.js';
 import { crearAlarma } from './plataforma/sonido.js';
 import { crearVoz } from './plataforma/voz.js';
@@ -39,6 +40,7 @@ errores.escucharErrores();
 
 const principal = document.getElementById('principal');
 const alarma = crearAlarma();
+const notificaciones = crearNotificaciones();
 
 // La beta se ve distinta (color ámbar e insignia) para no confundirla con la real.
 document.body.dataset.variante = CONFIG.variante;
@@ -51,13 +53,14 @@ const app = {
   archivos,
   almacenamiento,
   errores,
-  cronometro: crearCronometro({ alarma }),
+  notificaciones,
+  cronometro: crearCronometro({ alarma, notificaciones }),
   temporizadorSerie: crearTemporizadorSerie({ alarma }),
   pantalla: crearPantallaDespierta(),
   aviso: crearAvisos(),
   voz: crearVoz(),
   // Se leen al arrancar; la pantalla de equipo las cambia.
-  preferencias: { voz: false, respiracion: true }, // las iniciales de servicios/ajustes.js, mientras cargan
+  preferencias: { voz: false, respiracion: true, avisoPantallaApagada: false }, // las iniciales de servicios/ajustes.js, mientras cargan
   // Valores de una serie recién deshecha, para volver a mostrarlos en su tarjeta.
   borrador: null,
   ir(ruta, { reemplazar = false } = {}) {

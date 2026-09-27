@@ -1,5 +1,6 @@
 // Pantalla: tu equipo y la voz del descanso (tanda 3). Se llega desde Respaldo
-// y desde la calculadora de discos del ejercicio.
+// y desde la calculadora de discos del ejercicio. En el descanso también: la
+// guía de respiración y el aviso con la pantalla apagada (2026-09-27).
 // Dos inventarios que no se mezclan: discos de kg (2 pulgadas: barra y polea)
 // y discos de lb (1 pulgada: solo mancuernas).
 
@@ -42,10 +43,15 @@ export async function montar(raiz, _parametros, app) {
   const lb = discos(TAMANOS_LB, equipo.discosLb, 'lb');
   const texto = h('textarea', { class: 'entrada-nota', rows: '8' }, equipo.texto);
   // Un interruptor del descanso: guarda la preferencia en cuanto lo cambias.
-  const interruptor = (llave, encendida, apagada) => {
+  // `alEncender` (opcional) puede impedir encenderlo, p. ej. si no das el permiso.
+  const interruptor = (llave, encendida, apagada, alEncender = null) => {
     const caja = h('input', { type: 'checkbox', checked: Boolean(app.preferencias[llave]) });
     caja.addEventListener('change', async () => {
       try {
+        if (caja.checked && alEncender && !(await alEncender())) {
+          caja.checked = false;
+          return;
+        }
         app.preferencias = await app.servicios.ajustes.guardarPreferencias({ [llave]: caja.checked });
         app.aviso(caja.checked ? encendida : apagada);
       } catch (error) {
@@ -56,6 +62,21 @@ export async function montar(raiz, _parametros, app) {
   };
   const voz = interruptor('voz', 'Voz encendida', 'Voz apagada');
   const respiracion = interruptor('respiracion', 'Guía de respiración encendida', 'Guía de respiración apagada');
+  const avisoFuera = interruptor('avisoPantallaApagada', 'Aviso con la pantalla apagada encendido', 'Aviso con la pantalla apagada apagado', async () => {
+    if (await app.notificaciones.pedirPermiso()) return true;
+    app.aviso(
+      app.notificaciones.permiso === 'no-soportado' ? 'Este navegador no puede mostrar notificaciones' : 'Sin permiso de notificaciones no se puede avisar',
+      5000,
+    );
+    return false;
+  });
+  const permiso = app.notificaciones.permiso;
+  const notaPermiso =
+    permiso === 'no-soportado'
+      ? h('p', { class: 'nota aviso' }, 'Este navegador no puede mostrar notificaciones: aquí el aviso con la pantalla apagada no funciona.')
+      : permiso === 'denied'
+        ? h('p', { class: 'nota aviso' }, 'Chrome tiene bloqueadas las notificaciones de este sitio. Para el aviso, permítelas en los ajustes del sitio.')
+        : null;
 
   pintar(
     raiz,
@@ -84,6 +105,13 @@ export async function montar(raiz, _parametros, app) {
       { class: 'tarjeta' },
       h('h2', {}, 'En el descanso'),
       h('label', { class: 'interruptor' }, respiracion, h('span', {}, h('strong', {}, 'Guía de respiración'), h('small', {}, '«Inhala… / Exhala…» dentro del anillo, a su ritmo: 4 s y 6 s.'))),
+      h(
+        'label',
+        { class: 'interruptor' },
+        avisoFuera,
+        h('span', {}, h('strong', {}, 'Aviso con la pantalla apagada'), h('small', {}, 'Si apagas la pantalla o cambias de app, una notificación te avisa al terminar el descanso. Android puede retrasarla: no está garantizada.')),
+      ),
+      notaPermiso,
       h('label', { class: 'interruptor' }, voz, h('span', {}, h('strong', {}, 'Decir la siguiente serie'), h('small', {}, 'Al empezar el descanso, p. ej. «Sigue: serie 2, 55 kilos por 8».'))),
       h('p', { class: app.voz.disponible ? 'nota' : 'nota aviso' }, app.voz.disponible ? `Voz: ${app.voz.nombre}.` : 'Este teléfono no tiene (o todavía no carga) una voz en español.'),
       h('button', { type: 'button', class: 'boton ancho', onclick: probar }, 'Probar la voz'),

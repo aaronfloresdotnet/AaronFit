@@ -370,6 +370,27 @@ test('respaldo: el recordatorio (nunca, y a los 8 días) y el TSV, que no cuenta
   assert.deepEqual([despues.dias, despues.toca], [8, true]);
 });
 
+test('compartir respaldo: va como .txt con su fecha adentro, se importa igual y solo cuenta al anotarlo', async () => {
+  const m = await montaje('2026-09-21T15:00:00Z');
+  const id = await m.servicio.iniciarSesion(1);
+  await hacer(m, id, porClave('press-de-banca'));
+  const respaldo = crearServicioRespaldo({ repos: m.repos, reloj: m.reloj });
+  const archivo = await respaldo.paraCompartir();
+  assert.equal(archivo.nombre, 'aaronfit-respaldo-2026-09-21.txt', 'Chrome en Android no comparte .json');
+  assert.equal(await respaldo.ultimo(), undefined, 'armarlo no cuenta: si cierras el menú de compartir, no hubo respaldo');
+
+  const destinoRepos = crearReposEnMemoria();
+  const destino = crearServicioRespaldo({ repos: destinoRepos, reloj: m.reloj });
+  assert.equal((await destino.importar(archivo.texto)).ok, true, 'se importa igual que el .json');
+  const [importado, original] = [await destinoRepos.leerTodo(), await m.repos.leerTodo()];
+  for (const c of ['rutina', 'sesiones', 'series', 'medidas']) assert.deepEqual(importado[c], original[c], c);
+  assert.equal(await destinoRepos.estado.leer('ultimoRespaldo'), archivo.instante, 'el archivo trae su propia fecha');
+
+  await respaldo.anotar(archivo.instante);
+  const hoy = await respaldo.situacion();
+  assert.deepEqual([hoy.fecha, hoy.dias, hoy.toca], ['2026-09-21', 0, false]);
+});
+
 test('tanda 3: calentamiento solo en el primer ejercicio con barra del día y antes de su primera serie', async () => {
   const m = await montaje('2026-09-21T15:00:00Z');
   const banca = porClave('press-de-banca');
@@ -559,7 +580,12 @@ test('tanda 3: tu equipo y tus preferencias, guardados en estado', async () => {
   const equipo = await ajustes.equipo();
   assert.equal(equipo.maneral, 5);
   assert.equal(equipo.barra, 20, 'lo que no cambiaste se queda');
-  assert.deepEqual(await ajustes.preferencias(), { voz: false, respiracion: true }, 'la voz viene apagada; la guía de respiración, encendida');
-  assert.deepEqual(await ajustes.guardarPreferencias({ voz: true }), { voz: true, respiracion: true });
-  assert.deepEqual(await ajustes.guardarPreferencias({ respiracion: false }), { voz: true, respiracion: false });
+  assert.deepEqual(
+    await ajustes.preferencias(),
+    { voz: false, respiracion: true, avisoPantallaApagada: false },
+    'la voz viene apagada; la guía de respiración, encendida; el aviso con la pantalla apagada, apagado (pide permiso)',
+  );
+  assert.deepEqual(await ajustes.guardarPreferencias({ voz: true }), { voz: true, respiracion: true, avisoPantallaApagada: false });
+  assert.deepEqual(await ajustes.guardarPreferencias({ respiracion: false }), { voz: true, respiracion: false, avisoPantallaApagada: false });
+  assert.deepEqual(await ajustes.guardarPreferencias({ avisoPantallaApagada: true }), { voz: true, respiracion: false, avisoPantallaApagada: true });
 });

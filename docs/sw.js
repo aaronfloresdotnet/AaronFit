@@ -4,10 +4,11 @@
 // - NUNCA toca IndexedDB: los datos del usuario no pasan por aquí.
 // Al cambiar VERSION se instala la caché nueva y se borra la vieja; solo se
 // borran cachés con el mismo PREFIJO (la beta usa otro y no se tocan entre sí).
+// También muestra el aviso de fin de descanso con la pantalla apagada (abajo).
 
 // <archivos> — generado por herramientas/versionar-sw.js; no editar a mano.
 const PREFIJO = 'aaronfit-';
-const VERSION = 'aaronfit-65e8276c7674';
+const VERSION = 'aaronfit-a601674be4c1';
 const ARCHIVOS = [
   './',
   './css/estilos.css',
@@ -51,6 +52,7 @@ const ARCHIVOS = [
   './js/plataforma/almacenamiento.js',
   './js/plataforma/archivos.js',
   './js/plataforma/errores.js',
+  './js/plataforma/notificaciones.js',
   './js/plataforma/pantalla.js',
   './js/plataforma/sonido.js',
   './js/plataforma/voz.js',
@@ -104,5 +106,67 @@ self.addEventListener('fetch', (evento) => {
   }
   evento.respondWith(
     caches.match(request, { ignoreSearch: true }).then((guardada) => guardada ?? fetch(request)),
+  );
+});
+
+// Aviso de fin de descanso con la pantalla apagada (Aarón, 2026-09-27). La
+// página lo encarga al empezar el descanso y lo cancela si lo saltas, lo
+// deshaces o lo callas. Chrome deja vivo un evento hasta 5 minutos
+// (kRequestTimeout en el código de Chromium): alcanza para tus descansos, el
+// más largo de 150 s. Si estás viendo la app no sale: ya suena el timbre.
+// No está garantizado: Android puede retrasarlo o callarlo.
+const ETIQUETA_AVISO = 'fin-descanso';
+let avisoPendiente = null;
+
+function cancelarAviso() {
+  if (!avisoPendiente) return;
+  clearTimeout(avisoPendiente.temporizador);
+  avisoPendiente.terminar();
+  avisoPendiente = null;
+}
+
+async function mostrarAviso({ titulo, cuerpo }) {
+  const ventanas = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  if (ventanas.some((v) => v.visibilityState === 'visible' && v.focused)) return;
+  await self.registration.showNotification(titulo, {
+    body: cuerpo,
+    tag: ETIQUETA_AVISO,
+    renotify: true,
+    vibrate: [400, 150, 400, 150, 400],
+    icon: './iconos/icono-192.png',
+  });
+}
+
+self.addEventListener('message', (evento) => {
+  const mensaje = evento.data ?? {};
+  if (mensaje.tipo === 'programar-aviso') {
+    cancelarAviso();
+    evento.waitUntil(
+      new Promise((terminar) => {
+        const temporizador = setTimeout(() => {
+          avisoPendiente = null;
+          mostrarAviso(mensaje).catch(() => {}).finally(terminar);
+        }, Math.max(0, Number(mensaje.finEn) - Date.now() || 0));
+        avisoPendiente = { temporizador, terminar };
+      }),
+    );
+  } else if (mensaje.tipo === 'cancelar-aviso') {
+    cancelarAviso();
+    evento.waitUntil(
+      self.registration
+        .getNotifications({ tag: ETIQUETA_AVISO })
+        .then((avisos) => avisos.forEach((a) => a.close()))
+        .catch(() => {}),
+    );
+  }
+});
+
+// Tocar el aviso te regresa a la app (o la abre si ya no estaba).
+self.addEventListener('notificationclick', (evento) => {
+  evento.notification.close();
+  evento.waitUntil(
+    self.clients
+      .matchAll({ type: 'window', includeUncontrolled: true })
+      .then((ventanas) => (ventanas[0] ? ventanas[0].focus() : self.clients.openWindow('./'))),
   );
 });

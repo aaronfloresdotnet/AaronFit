@@ -13,7 +13,8 @@ export const FORMATO = 'aaronfit-respaldo';
 export const VERSION_FORMATO = 2;
 export const COLECCIONES = Object.freeze(['rutina', 'sesiones', 'series', 'medidas', 'estado']);
 
-export const nombreArchivo = (fechaTexto) => `aaronfit-respaldo-${fechaTexto}.json`;
+// Para compartir va como .txt: Chrome en Android no deja compartir .json (2026-09-27).
+export const nombreArchivo = (fechaTexto, extension = 'json') => `aaronfit-respaldo-${fechaTexto}.${extension}`;
 
 const esNumero = (v) => typeof v === 'number' && Number.isFinite(v);
 const TIPOS = {

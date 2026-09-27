@@ -83,9 +83,17 @@ Sin verificar en el cel: la guía con el teléfono en la mano, «Respira despaci
 real de una IA con nombres cambiados (se probó con respuestas escritas a mano).
 No cubre: sinónimos o traducciones («Bench press») no se detectan solos: se unen a mano en la revisión.
 
-## Ideas aprobadas sin tanda
-Aarón eligió (2026-09-27), para la beta: **compartir respaldo** y **aviso de fin de descanso con la pantalla apagada**
-(no garantizado en Android). **Pruebas en Android emulado:** no la eligió. Decisión 123.
+## Después de la v2.0: hecho (en la beta, esperando aprobación)
+Aarón eligió estas dos ideas (2026-09-27) y aprobó el diseño que le propuse. Decisiones 123 y 125 a 128. Pruebas: 161 de 161.
+- **Compartir respaldo:** botón junto a Exportar, solo si el teléfono puede compartir archivos. Va como `.txt`: Chrome en
+  Android no deja compartir `.json`. Importar acepta `.txt`. La fecha del respaldo se anota solo si no cierras el menú.
+- **Aviso con la pantalla apagada:** interruptor en Tu equipo › En el descanso, apagado de inicio (pide permiso de
+  notificaciones). El service worker muestra la notificación al terminar el descanso si no estás viendo la app;
+  saltar, deshacer o callar el descanso la cancela. No garantizado en Android.
+
+**Pruebas en Android emulado:** no la eligió.
+Sin verificar en el cel: el menú de compartir y qué hacen WhatsApp o Drive con el archivo; la notificación real con la
+pantalla apagada. Se probó en el navegador de escritorio con compartir y permiso simulados, y el service worker en pruebas.
 
 ## Pendiente de decisión de Aarón (2026-09-23)
 - Reglas de mancuerna: 9 de 9 suben «+5 lb», pero con sus discos (el más chico de 5 lb, igual en los dos extremos)

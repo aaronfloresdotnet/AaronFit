@@ -7,6 +7,9 @@
 // Guía de respiración (Aarón, 2026-09-23): «Inhala… / Exhala…» dentro del
 // anillo, al ritmo con el que ya «respira» (4 s crece, 6 s baja). Es solo CSS:
 // empieza al mismo tiempo que el anillo, así que no se desfasa.
+// Aviso con la pantalla apagada (Aarón, 2026-09-27): si está encendido, al
+// empezar le encarga una notificación para la hora de fin; cerrar el descanso
+// (saltar, deshacer o callarlo) la cancela.
 
 import { reloj } from '../logica/formato.js';
 import { h } from './dom.js';
@@ -34,7 +37,7 @@ function crearAnillo() {
   return { svg, fijar: (fraccion) => (progreso.style.strokeDashoffset = String(CIRCUNFERENCIA * (1 - Math.max(0, Math.min(1, fraccion))))) };
 }
 
-export function crearCronometro({ alarma }) {
+export function crearCronometro({ alarma, notificaciones = null }) {
   let finEn = 0;
   let total = 0;
   let intervalo = null;
@@ -114,6 +117,7 @@ export function crearCronometro({ alarma }) {
     estado = 'inactivo';
     alDeshacer = null;
     alarma.detener();
+    notificaciones?.cancelar();
     capa.hidden = true;
     capa.classList.remove('sonando');
   }
@@ -121,9 +125,9 @@ export function crearCronometro({ alarma }) {
   /**
    * Arranca el descanso. Con 0 segundos no aparece (ejercicios sin descanso).
    * @param {number} segundos
-   * @param {{texto?:string, frases?:string[], deshacer?:() => void, respiracion?:boolean}} [opciones]
+   * @param {{texto?:string, frases?:string[], deshacer?:() => void, respiracion?:boolean, avisoFuera?:boolean}} [opciones]
    */
-  function iniciar(segundos, { texto = '', frases = [], deshacer: accionDeshacer = null, respiracion = false } = {}) {
+  function iniciar(segundos, { texto = '', frases = [], deshacer: accionDeshacer = null, respiracion = false, avisoFuera = false } = {}) {
     cerrar();
     if (!segundos) return;
     total = segundos;
@@ -139,6 +143,7 @@ export function crearCronometro({ alarma }) {
     capa.classList.toggle('con-respiracion', respiracion); // antes de mostrarla: así empieza junto con el anillo
     capa.hidden = false;
     alarma.programar(segundos);
+    if (avisoFuera) notificaciones?.programar(finEn, { titulo: '¡A darle! Terminó el descanso', cuerpo: texto || 'Vuelve a la app para seguir.' });
     mostrarFrases(frases);
     tic();
     intervalo = setInterval(tic, 250);
